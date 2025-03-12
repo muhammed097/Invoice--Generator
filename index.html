@@ -119,10 +119,13 @@
                     <thead>
                         <tr>
                             <th width="5%">SI No.</th>
-                            <th width="45%">Description</th>
-                            <th width="15%">Quantity</th>
-                            <th width="15%">Price (<span class="currency-symbol">₹</span>)</th>
-                            <th width="15%">Amount (<span class="currency-symbol">₹</span>)</th>
+                            <th width="30%">Description</th>
+                            <th width="10%">HSN Code</th>
+                            <th width="10%">Quantity</th>
+                            <th width="10%">Price (<span class="currency-symbol">₹</span>)</th>
+                            <th width="10%">GST %</th>
+                            <th width="10%">GST Amt</th>
+                            <th width="10%">Amount (<span class="currency-symbol">₹</span>)</th>
                             <th width="5%"></th>
                         </tr>
                     </thead>
@@ -130,8 +133,11 @@
                         <tr>
                             <td>1</td>
                             <td><input type="text" class="item-description" placeholder="Item description"></td>
+                            <td><input type="text" class="item-hsn" placeholder="HSN code"></td>
                             <td><input type="number" class="item-quantity" value="1" min="1"></td>
                             <td><input type="number" class="item-price" value="0" min="0" step="0.01"></td>
+                            <td><input type="number" class="item-gst-percent" value="0" min="0" max="100" step="0.01"></td>
+                            <td class="item-gst-amount">0.00</td>
                             <td class="item-total">0.00</td>
                             <td><button class="btn btn-remove">×</button></td>
                         </tr>

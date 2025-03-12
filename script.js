@@ -94,8 +94,11 @@ document.addEventListener('DOMContentLoaded', function () {
         newRow.innerHTML = `
             <td>${rowCount + 1}</td>
             <td><input type="text" class="item-description" placeholder="Item description"></td>
+            <td><input type="text" class="item-hsn" placeholder="HSN code"></td>
             <td><input type="number" class="item-quantity" value="1" min="1"></td>
             <td><input type="number" class="item-price" value="0" min="0" step="0.01"></td>
+            <td><input type="number" class="item-gst-percent" value="0" min="0" max="100" step="0.01"></td>
+            <td class="item-gst-amount">0.00</td>
             <td class="item-total">0.00</td>
             <td><button class="btn btn-remove">×</button></td>
         `;
@@ -128,17 +131,37 @@ document.addEventListener('DOMContentLoaded', function () {
     function updateTotals() {
         const rows = document.querySelectorAll('#item-rows tr');
         let grandTotal = 0;
+        let totalGstAmount = 0;
 
         rows.forEach(row => {
             const quantity = Math.max(parseFloat(row.querySelector('.item-quantity').value) || 0, 0);
             const price = Math.max(parseFloat(row.querySelector('.item-price').value) || 0, 0);
-            const total = quantity * price;
+            const gstPercent = Math.max(parseFloat(row.querySelector('.item-gst-percent').value) || 0, 0);
 
+            const subtotal = quantity * price;
+            const gstAmount = (subtotal * gstPercent / 100);
+            const total = subtotal + gstAmount;
+
+            row.querySelector('.item-gst-amount').textContent = gstAmount.toFixed(2);
             row.querySelector('.item-total').textContent = total.toFixed(2);
+
             grandTotal += total;
+            totalGstAmount += gstAmount;
         });
 
         document.getElementById('total-amount').innerHTML = `<span class="currency-symbol">${selectedCurrency}</span>${grandTotal.toFixed(2)}`;
+        // Create or update GST total element if it doesn't exist yet
+        if (!document.getElementById('total-gst-amount')) {
+            const totalSection = document.querySelector('.total-section');
+            const gstTotalElement = document.createElement('div');
+            gstTotalElement.className = 'total-gst';
+            gstTotalElement.innerHTML = `<span class="total-label">Total GST:</span>
+                                         <span id="total-gst-amount" class="total-amount"><span class="currency-symbol">${selectedCurrency}</span>${totalGstAmount.toFixed(2)}</span>`;
+            totalSection.insertBefore(gstTotalElement, totalSection.firstChild);
+        } else {
+            document.getElementById('total-gst-amount').innerHTML = `<span class="currency-symbol">${selectedCurrency}</span>${totalGstAmount.toFixed(2)}`;
+        }
+
         document.getElementById('amount-in-words').textContent = numberToWords(grandTotal) + ' ' + currencyName + ' Only';
     }
 
@@ -249,24 +272,34 @@ document.addEventListener('DOMContentLoaded', function () {
         // Generate item rows HTML
         let itemsHTML = '';
         let grandTotal = 0;
+        let totalGstAmount = 0;
 
         items.forEach((item, index) => {
             const description = item.querySelector('.item-description').value;
+            const hsnCode = item.querySelector('.item-hsn').value;
             const quantity = Math.max(parseFloat(item.querySelector('.item-quantity').value) || 0, 0);
             const price = Math.max(parseFloat(item.querySelector('.item-price').value) || 0, 0);
-            const total = quantity * price;
+            const gstPercent = Math.max(parseFloat(item.querySelector('.item-gst-percent').value) || 0, 0);
+
+            const subtotal = quantity * price;
+            const gstAmount = (subtotal * gstPercent / 100);
+            const total = subtotal + gstAmount;
 
             itemsHTML += `
-                <tr>
-                    <td>${index + 1}</td>
-                    <td>${description}</td>
-                    <td>${quantity}</td>
-                    <td>${selectedCurrency}${price.toFixed(2)}</td>
-                    <td>${selectedCurrency}${total.toFixed(2)}</td>
-                </tr>
-            `;
+        <tr>
+            <td>${index + 1}</td>
+            <td>${description}</td>
+            <td>${hsnCode}</td>
+            <td>${quantity}</td>
+            <td>${selectedCurrency}${price.toFixed(2)}</td>
+            <td>${gstPercent}%</td>
+            <td>${selectedCurrency}${gstAmount.toFixed(2)}</td>
+            <td>${selectedCurrency}${total.toFixed(2)}</td>
+        </tr>
+    `;
 
             grandTotal += total;
+            totalGstAmount += gstAmount;
         });
 
         // Get banking details
@@ -313,25 +346,28 @@ document.addEventListener('DOMContentLoaded', function () {
     </div>
 </div>
             
-            <table class="invoice-items">
-                <thead>
-                    <tr>
-                        <th>SI No.</th>
-                        <th>Description</th>
-                        <th>Quantity</th>
-                        <th>Price</th>
-                        <th>Amount</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    ${itemsHTML}
-                </tbody>
-            </table>
-            
+    <table class="invoice-items">
+    <thead>
+        <tr>
+            <th>SI No.</th>
+            <th>Description</th>
+            <th>HSN Code</th>
+            <th>Quantity</th>
+            <th>Price</th>
+            <th>GST %</th>
+            <th>GST Amt</th>
+            <th>Amount</th>
+        </tr>
+    </thead>
+    <tbody>
+        ${itemsHTML}
+    </tbody>
+</table>
             <div class="invoice-total">
-                <p class="invoice-total-row">Total: ${selectedCurrency}${grandTotal.toFixed(2)}</p>
-                <p><em>${numberToWords(grandTotal)} ${currencyName} Only</em></p>
-            </div>
+    <p class="invoice-total-row">Total GST: ${selectedCurrency}${totalGstAmount.toFixed(2)}</p>
+    <p class="invoice-total-row">Grand Total: ${selectedCurrency}${grandTotal.toFixed(2)}</p>
+    <p><em>${numberToWords(grandTotal)} ${currencyName} Only</em></p>
+</div>
             
             <div style="margin-top: 30px; border-top: 1px solid #dee2e6; padding-top: 20px;">
                 <h3 style="color: #4361ee; margin-bottom: 10px;">Banking Details:</h3>
@@ -476,3 +512,5 @@ document.addEventListener('DOMContentLoaded', function () {
         return (isNegative ? 'Negative ' : '') + result.trim();
     }
 });
+
+
