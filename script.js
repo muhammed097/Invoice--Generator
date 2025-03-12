@@ -514,3 +514,44 @@ document.addEventListener('DOMContentLoaded', function () {
 });
 
 
+// Popup functionality
+const popup = document.getElementById('welcome-popup');
+const closePopup = document.querySelector('.close-popup');
+const redirectButton = document.getElementById('redirect-button');
+const redirectUrl = "https://wa.me/+916380986703"; 
+
+// Redirect when button is clicked - opens in a new tab
+redirectButton.addEventListener('click', () => {
+    window.open(redirectUrl, '_blank');
+});
+
+// Show popup when page loads (with a slight delay for better UX)
+setTimeout(() => {
+    popup.style.display = 'flex';
+}, 1000);
+
+// Close popup when close button is clicked
+closePopup.addEventListener('click', () => {
+    popup.style.display = 'none';
+});
+
+// Close popup when clicking outside of it
+window.addEventListener('click', (e) => {
+    if (e.target === popup) {
+        popup.style.display = 'none';
+    }
+});
+
+// Store popup state in localStorage to control how often it's shown
+const popupLastShown = localStorage.getItem('popupLastShown');
+const currentTime = new Date().getTime();
+
+// Check if popup was shown in the last 24 hours
+if (popupLastShown && currentTime - popupLastShown < 24 * 60 * 60 * 1000) {
+    // Don't show popup if it was shown in the last 24 hours
+    popup.style.display = 'none';
+} else {
+    // Update the last shown time
+    localStorage.setItem('popupLastShown', currentTime);
+}
+

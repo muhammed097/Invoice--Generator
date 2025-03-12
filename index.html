@@ -6,6 +6,15 @@
     <title>Invoice Generator</title>
     <link rel="icon" type="image/png" href="invoice.png">
     <link rel="stylesheet" href="style.css">
+    <!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-BRDC4GRP9W"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-BRDC4GRP9W');
+</script>
 </head>
 <body>
     <div class="container">
@@ -204,6 +213,23 @@
 
         <div class="invoice-output" id="invoice-output" style="display: none;">
             <!-- Invoice will be generated here -->
+        </div>
+    </div>
+
+    <div id="welcome-popup" class="popup-overlay">
+        <div class="popup-content">
+            <span class="close-popup">&times;</span>
+            <h2>Hi, I'm Muhammed!</h2>
+            <p>Thank you for using my Invoice Generator. I'm also a freelance web developer and logo designer.</p>
+            <p>I create custom websites and eye-catching logos to help businesses like yours establish a strong online presence. Each project is crafted with attention to detail and tailored to your specific needs.</p>
+            <p><strong>My services include:</strong></p>
+            <ul style="margin-bottom: 15px; padding-left: 20px;">
+                <li>Custom Website Development</li>
+                <li>Logo Design</li>
+                <li>Posters Design</li>
+            </ul>
+            <p>Let's discuss how I can help grow your business!</p>
+            <button id="redirect-button" class="btn btn-primary">Contact Me Now</button>
         </div>
     </div>
     <footer class="footer">
