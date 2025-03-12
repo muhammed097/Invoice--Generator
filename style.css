@@ -281,6 +281,40 @@ textarea {
     margin-bottom: 15px;
 }
 
+.logo-uploader {
+    margin-bottom: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+}
+
+.logo-preview-container {
+    display: flex;
+    align-items: center;
+    margin-bottom: 15px;
+}
+
+.logo-upload-label {
+    display: inline-block;
+    background-color: var(--secondary-color);
+    color: white;
+    padding: 10px 20px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.logo-upload-label:hover {
+    background-color: #2b28a7;
+}
+
+.logo-help-text {
+    font-size: 14px;
+    color: #6c757d;
+    margin-top: 8px;
+}
+
 @media print {
     .form-container, header, .invoice-actions {
         display: none;

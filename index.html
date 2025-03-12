@@ -11,12 +11,23 @@
     <div class="container">
         <header>
             <h1>Invoice Generator</h1>
-            <p>Invoicing Simplified</p>
+            <p>Create professional invoices quickly and easily</p>
         </header>
 
         <div class="form-container">
             <div class="form-section">
                 <h2>Invoice Details</h2>
+                <div class="logo-uploader">
+                    <div class="logo-preview-container">
+                        <img id="logo-preview" src="" alt="Your logo" style="display: none; max-width: 200px; max-height: 80px;">
+                        <button id="remove-logo" class="btn btn-remove" style="display: none; margin-left: 10px;">Remove Logo</button>
+                    </div>
+                    <label for="logo-upload" class="logo-upload-label">
+                        <span>Upload Your Logo</span>
+                        <input type="file" id="logo-upload" accept="image/*" style="display: none;">
+                    </label>
+                    <p class="logo-help-text">Recommended size: 200×80px. Max file size: 1MB</p>
+                </div>
                 <div class="currency-selector">
                     <label for="currency-select">Select Currency</label>
                     <select id="currency-select">
@@ -70,6 +81,10 @@
                         <label for="from-email">Email</label>
                         <input type="email" id="from-email" placeholder="Your email address">
                     </div>
+                    <div class="form-group">
+                        <label for="from-gst">GST Number</label>
+                        <input type="text" id="from-gst" placeholder="Your GST number (optional)">
+                    </div>
                 </div>
 
                 <div class="flex-item form-section">
@@ -90,6 +105,10 @@
                     <div class="form-group">
                         <label for="to-email">Email</label>
                         <input type="email" id="to-email" placeholder="Client's email address">
+                    </div>
+                    <div class="form-group">
+                        <label for="to-gst">GST Number</label>
+                        <input type="text" id="to-gst" placeholder="Client's GST number (optional)">
                     </div>
                 </div>
             </div>

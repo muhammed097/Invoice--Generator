@@ -1,10 +1,44 @@
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', function () {
+    // Logo upload functionality
+    const logoUpload = document.getElementById('logo-upload');
+    const logoPreview = document.getElementById('logo-preview');
+    const removeLogo = document.getElementById('remove-logo');
+    let logoData = null;
+
+    logoUpload.addEventListener('change', function (e) {
+        const file = e.target.files[0];
+        if (file) {
+            // Check file size (limit to 1MB)
+            if (file.size > 1024 * 1024) {
+                alert('File is too large. Maximum file size is 1MB.');
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.onload = function (event) {
+                logoData = event.target.result;
+                logoPreview.src = logoData;
+                logoPreview.style.display = 'block';
+                removeLogo.style.display = 'inline-block';
+            };
+            reader.readAsDataURL(file);
+        }
+    });
+
+    removeLogo.addEventListener('click', function () {
+        logoData = null;
+        logoPreview.src = '';
+        logoPreview.style.display = 'none';
+        removeLogo.style.display = 'none';
+        logoUpload.value = ''; // Reset the file input
+    });
+
     // Currency settings
     const currencySelect = document.getElementById('currency-select');
     const currencySymbols = document.querySelectorAll('.currency-symbol');
     let selectedCurrency = currencySelect.value;
     let currencyName = 'Rupees';
-    
+
     // Currency name mapping
     const currencyNames = {
         '₹': 'Rupees',
@@ -13,27 +47,25 @@ document.addEventListener('DOMContentLoaded', function() {
         '£': 'Pounds',
         '¥': 'Yen'
     };
-    
+
     // Update currency symbols when currency is changed
-    currencySelect.addEventListener('change', function() {
+    currencySelect.addEventListener('change', function () {
         selectedCurrency = this.value;
         currencyName = currencyNames[selectedCurrency];
-        
+
         // Update all currency symbols
         currencySymbols.forEach(symbol => {
             symbol.textContent = selectedCurrency;
         });
-        
+
         // Update totals to reflect new currency
         updateTotals();
     });
 
-    
-
     // Set today's date as default for invoice date
     const today = new Date().toISOString().split('T')[0];
     document.getElementById('invoice-date').value = today;
-    
+
     // Calculate due date (30 days from today) as default
     const dueDate = new Date();
     dueDate.setDate(dueDate.getDate() + 30);
@@ -41,7 +73,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Add event listeners for item rows
     document.getElementById('items-table').addEventListener('input', updateTotals);
-    document.getElementById('items-table').addEventListener('click', function(e) {
+    document.getElementById('items-table').addEventListener('click', function (e) {
         if (e.target.classList.contains('btn-remove')) {
             if (document.querySelectorAll('#item-rows tr').length > 1) {
                 e.target.closest('tr').remove();
@@ -54,10 +86,10 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
     // Add new item row
-    document.getElementById('add-item').addEventListener('click', function() {
+    document.getElementById('add-item').addEventListener('click', function () {
         const tableBody = document.getElementById('item-rows');
         const rowCount = tableBody.querySelectorAll('tr').length;
-        
+
         const newRow = document.createElement('tr');
         newRow.innerHTML = `
             <td>${rowCount + 1}</td>
@@ -67,7 +99,7 @@ document.addEventListener('DOMContentLoaded', function() {
             <td class="item-total">0.00</td>
             <td><button class="btn btn-remove">×</button></td>
         `;
-        
+
         tableBody.appendChild(newRow);
     });
 
@@ -75,7 +107,7 @@ document.addEventListener('DOMContentLoaded', function() {
     document.getElementById('generate-invoice').addEventListener('click', generateInvoice);
 
     // Print invoice
-    document.getElementById('print-invoice').addEventListener('click', function() {
+    document.getElementById('print-invoice').addEventListener('click', function () {
         if (document.getElementById('invoice-output').style.display === 'none') {
             alert('Please generate the invoice first.');
             return;
@@ -83,7 +115,7 @@ document.addEventListener('DOMContentLoaded', function() {
         window.print();
     });
 
-    
+
     // Update row numbers after removal
     function updateRowNumbers() {
         const rows = document.querySelectorAll('#item-rows tr');
@@ -96,16 +128,16 @@ document.addEventListener('DOMContentLoaded', function() {
     function updateTotals() {
         const rows = document.querySelectorAll('#item-rows tr');
         let grandTotal = 0;
-        
+
         rows.forEach(row => {
             const quantity = Math.max(parseFloat(row.querySelector('.item-quantity').value) || 0, 0);
             const price = Math.max(parseFloat(row.querySelector('.item-price').value) || 0, 0);
             const total = quantity * price;
-            
+
             row.querySelector('.item-total').textContent = total.toFixed(2);
             grandTotal += total;
         });
-        
+
         document.getElementById('total-amount').innerHTML = `<span class="currency-symbol">${selectedCurrency}</span>${grandTotal.toFixed(2)}`;
         document.getElementById('amount-in-words').textContent = numberToWords(grandTotal) + ' ' + currencyName + ' Only';
     }
@@ -116,7 +148,7 @@ document.addEventListener('DOMContentLoaded', function() {
         errorElements.forEach(el => {
             el.style.display = 'none';
         });
-        
+
         // Reset border colors
         const inputElements = document.querySelectorAll('input, textarea');
         inputElements.forEach(el => {
@@ -138,16 +170,16 @@ document.addEventListener('DOMContentLoaded', function() {
     function generateInvoice() {
         // Hide all previous errors
         hideAllErrors();
-        
+
         // Validate form fields
         let isValid = true;
-        
+
         // Required fields validation
         const requiredFields = [
             'invoice-number', 'invoice-date', 'due-date',
             'from-name', 'to-name'
         ];
-        
+
         requiredFields.forEach(field => {
             const element = document.getElementById(field);
             if (!element.value.trim()) {
@@ -155,72 +187,75 @@ document.addEventListener('DOMContentLoaded', function() {
                 isValid = false;
             }
         });
-        
+
         // Date validation
         const invoiceDate = new Date(document.getElementById('invoice-date').value);
         const dueDate = new Date(document.getElementById('due-date').value);
-        
+
         if (dueDate < invoiceDate) {
             document.getElementById('due-date').style.borderColor = 'red';
             document.getElementById('due-date-error').textContent = 'Due date must be after invoice date';
             document.getElementById('due-date-error').style.display = 'block';
             isValid = false;
         }
-        
+
         // Check if at least one item has description and price
         const items = document.querySelectorAll('#item-rows tr');
         let hasValidItem = false;
-        
+
         items.forEach(item => {
             const description = item.querySelector('.item-description').value.trim();
             const price = parseFloat(item.querySelector('.item-price').value) || 0;
-            
+
             if (description && price > 0) {
                 hasValidItem = true;
             }
         });
-        
+
         if (!hasValidItem) {
             document.getElementById('items-error').style.display = 'block';
             isValid = false;
         }
-        
+
         if (!isValid) {
             alert('Please fix the highlighted errors before generating the invoice.');
             return;
         }
-        
+
         // Get form values
         const invoiceNumber = document.getElementById('invoice-number').value;
         const invoiceDateValue = document.getElementById('invoice-date').value;
         const dueDateValue = document.getElementById('due-date').value;
-        
+
         const fromName = document.getElementById('from-name').value;
         const fromAddress = document.getElementById('from-address').value;
         const fromPhone = document.getElementById('from-phone').value;
         const fromEmail = document.getElementById('from-email').value;
-        
+
         const toName = document.getElementById('to-name').value;
         const toAddress = document.getElementById('to-address').value;
         const toPhone = document.getElementById('to-phone').value;
         const toEmail = document.getElementById('to-email').value;
-        
+
+        const fromGst = document.getElementById('from-gst').value;
+        const toGst = document.getElementById('to-gst').value;
+
         const notes = document.getElementById('notes').value;
-        
+
         // Format dates
         const formattedInvoiceDate = formatDate(invoiceDateValue);
         const formattedDueDate = formatDate(dueDateValue);
-        
+
         // Generate item rows HTML
         let itemsHTML = '';
         let grandTotal = 0;
-        
+
         items.forEach((item, index) => {
             const description = item.querySelector('.item-description').value;
             const quantity = Math.max(parseFloat(item.querySelector('.item-quantity').value) || 0, 0);
             const price = Math.max(parseFloat(item.querySelector('.item-price').value) || 0, 0);
             const total = quantity * price;
-            
+
             itemsHTML += `
                 <tr>
                     <td>${index + 1}</td>
@@ -230,10 +265,10 @@ document.addEventListener('DOMContentLoaded', function() {
                     <td>${selectedCurrency}${total.toFixed(2)}</td>
                 </tr>
             `;
-            
+
             grandTotal += total;
         });
-        
+
         // Get banking details
         const bankName = document.getElementById('bank-name').value;
         const accountName = document.getElementById('account-name').value;
@@ -241,9 +276,14 @@ document.addEventListener('DOMContentLoaded', function() {
         const ifscCode = document.getElementById('ifsc-code').value;
         const branchDetails = document.getElementById('branch-details').value;
         const upiId = document.getElementById('upi-id').value;
-        
+
         // Generate the invoice HTML
         const invoiceHTML = `
+            ${logoData ? `
+                <div style="text-align: left; margin-bottom: 20px;">
+                    <img src="${logoData}" alt="Company Logo" style="max-height: 80px; max-width: 200px;">
+                </div>
+            ` : ''}
             <div class="invoice-header">
                 <div>
                     <h1 class="invoice-title">INVOICE</h1>
@@ -253,23 +293,25 @@ document.addEventListener('DOMContentLoaded', function() {
                 </div>
             </div>
             
-            <div class="from-to-container">
-                <div class="address-block">
-                    <h3 class="address-heading">From:</h3>
-                    <p><strong>${fromName}</strong></p>
-                    <p>${fromAddress.replace(/\n/g, '<br>')}</p>
-                    ${fromPhone ? `<p>Phone: ${fromPhone}</p>` : ''}
-                    ${fromEmail ? `<p>Email: ${fromEmail}</p>` : ''}
-                </div>
-                
-                <div class="address-block">
-                    <h3 class="address-heading">To:</h3>
-                    <p><strong>${toName}</strong></p>
-                    <p>${toAddress.replace(/\n/g, '<br>')}</p>
-                    ${toPhone ? `<p>Phone: ${toPhone}</p>` : ''}
-                    ${toEmail ? `<p>Email: ${toEmail}</p>` : ''}
-                </div>
-            </div>
+           <div class="from-to-container">
+    <div class="address-block">
+        <h3 class="address-heading">From:</h3>
+        <p><strong>${fromName}</strong></p>
+        <p>${fromAddress.replace(/\n/g, '<br>')}</p>
+        ${fromPhone ? `<p>Phone: ${fromPhone}</p>` : ''}
+        ${fromEmail ? `<p>Email: ${fromEmail}</p>` : ''}
+        ${fromGst ? `<p>GST: ${fromGst}</p>` : ''}
+    </div>
+    
+    <div class="address-block">
+        <h3 class="address-heading">To:</h3>
+        <p><strong>${toName}</strong></p>
+        <p>${toAddress.replace(/\n/g, '<br>')}</p>
+        ${toPhone ? `<p>Phone: ${toPhone}</p>` : ''}
+        ${toEmail ? `<p>Email: ${toEmail}</p>` : ''}
+        ${toGst ? `<p>GST: ${toGst}</p>` : ''}
+    </div>
+</div>
             
             <table class="invoice-items">
                 <thead>
@@ -328,75 +370,75 @@ document.addEventListener('DOMContentLoaded', function() {
             </div>
             ` : ''}
         `;
-        
+
         // Update the invoice output div and show it
         document.getElementById('invoice-output').innerHTML = invoiceHTML;
         document.getElementById('invoice-output').style.display = 'block';
-        
+
         // Scroll to the invoice
         document.getElementById('invoice-output').scrollIntoView({ behavior: 'smooth' });
     }
-    
+
     // Helper function to format dates
     function formatDate(dateString) {
         const date = new Date(dateString);
         const day = date.getDate().toString().padStart(2, '0');
         const month = (date.getMonth() + 1).toString().padStart(2, '0');
         const year = date.getFullYear();
-        
+
         return `${day}/${month}/${year}`;
     }
-    
+
     // Convert number to words (for various currencies)
     function numberToWords(number) {
         const units = ['', 'One', 'Two', 'Three', 'Four', 'Five', 'Six', 'Seven', 'Eight', 'Nine', 'Ten', 'Eleven', 'Twelve', 'Thirteen', 'Fourteen', 'Fifteen', 'Sixteen', 'Seventeen', 'Eighteen', 'Nineteen'];
         const tens = ['', '', 'Twenty', 'Thirty', 'Forty', 'Fifty', 'Sixty', 'Seventy', 'Eighty', 'Ninety'];
-        
+
         function convertLessThanOneThousand(num) {
             if (num === 0) {
                 return '';
             }
-            
+
             if (num < 20) {
                 return units[num];
             }
-            
+
             if (num < 100) {
                 return tens[Math.floor(num / 10)] + (num % 10 !== 0 ? ' ' + units[num % 10] : '');
             }
-            
+
             return units[Math.floor(num / 100)] + ' Hundred' + (num % 100 !== 0 ? ' ' + convertLessThanOneThousand(num % 100) : '');
         }
-        
+
         // Handle zero
         if (number === 0) {
             return 'Zero';
         }
-        
+
         // Handle negative numbers
         const isNegative = number < 0;
         number = Math.abs(number);
-        
+
         // Handle decimal
         const decimalPart = Math.round((number - Math.floor(number)) * 100);
         number = Math.floor(number);
-        
+
         // Different naming systems based on currency
         const currencySystem = selectedCurrency === '₹' ? 'indian' : 'international';
         let result = '';
-        
+
         if (currencySystem === 'indian') {
             // Indian numbering system (crore, lakh, thousand)
             if (number >= 10000000) { // Crore (10^7)
                 result += convertLessThanOneThousand(Math.floor(number / 10000000)) + ' Crore ';
                 number %= 10000000;
             }
-            
+
             if (number >= 100000) { // Lakh (10^5)
                 result += convertLessThanOneThousand(Math.floor(number / 100000)) + ' Lakh ';
                 number %= 100000;
             }
-            
+
             if (number >= 1000) { // Thousand
                 result += convertLessThanOneThousand(Math.floor(number / 1000)) + ' Thousand ';
                 number %= 1000;
@@ -407,17 +449,17 @@ document.addEventListener('DOMContentLoaded', function() {
                 result += convertLessThanOneThousand(Math.floor(number / 1000000)) + ' Million ';
                 number %= 1000000;
             }
-            
+
             if (number >= 1000) { // Thousand
                 result += convertLessThanOneThousand(Math.floor(number / 1000)) + ' Thousand ';
                 number %= 1000;
             }
         }
-        
+
         if (number > 0) {
             result += convertLessThanOneThousand(number);
         }
-        
+
         // Add decimal part if exists
         if (decimalPart > 0) {
             const subunitName = {
@@ -427,10 +469,10 @@ document.addEventListener('DOMContentLoaded', function() {
                 '£': 'Pence',
                 '¥': 'Sen'
             }[selectedCurrency] || 'Cents';
-            
+
             result += ' and ' + convertLessThanOneThousand(decimalPart) + ' ' + subunitName;
         }
-        
+
         return (isNegative ? 'Negative ' : '') + result.trim();
     }
 });
