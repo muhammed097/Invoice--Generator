@@ -109,15 +109,74 @@ document.addEventListener('DOMContentLoaded', function () {
     // Generate invoice
     document.getElementById('generate-invoice').addEventListener('click', generateInvoice);
 
-    // Print invoice
+    // Print invoice with improved print handling
     document.getElementById('print-invoice').addEventListener('click', function () {
         if (document.getElementById('invoice-output').style.display === 'none') {
             alert('Please generate the invoice first.');
             return;
         }
+        
+        // Add print-specific styles
+        const printStyle = document.createElement('style');
+        printStyle.id = 'print-styles';
+        printStyle.textContent = `
+            @media print {
+                body, html {
+                    width: 100%;
+                    margin: 0;
+                    padding: 0;
+                }
+                .container {
+                    box-shadow: none;
+                    max-width: 100%;
+                    margin: 0;
+                    padding: 0;
+                }
+                .form-container, header, .invoice-actions, .footer, .popup-overlay {
+                    display: none !important;
+                }
+                .invoice-output {
+                    margin: 0;
+                    padding: 20px;
+                    box-shadow: none;
+                    border: none;
+                    width: 100%;
+                }
+                .invoice-items {
+                    width: 100% !important;
+                    table-layout: fixed !important;
+                    white-space: normal !important;
+                    overflow-x: visible !important;
+                    display: table !important;
+                }
+                .invoice-items:before {
+                    display: none !important;
+                }
+                .invoice-items th, .invoice-items td {
+                    white-space: normal !important;
+                    overflow: visible !important;
+                    page-break-inside: avoid !important;
+                }
+                .invoice-items th:nth-child(1), .invoice-items td:nth-child(1) { width: 5%; }
+                .invoice-items th:nth-child(2), .invoice-items td:nth-child(2) { width: 25%; }
+                .invoice-items th:nth-child(3), .invoice-items td:nth-child(3) { width: 10%; }
+                .invoice-items th:nth-child(4), .invoice-items td:nth-child(4) { width: 10%; }
+                .invoice-items th:nth-child(5), .invoice-items td:nth-child(5) { width: 10%; }
+                .invoice-items th:nth-child(6), .invoice-items td:nth-child(6) { width: 10%; }
+                .invoice-items th:nth-child(7), .invoice-items td:nth-child(7) { width: 10%; }
+                .invoice-items th:nth-child(8), .invoice-items td:nth-child(8) { width: 20%; }
+            }
+        `;
+        document.head.appendChild(printStyle);
+        
+        // Execute print
         window.print();
+        
+        // Clean up after printing
+        setTimeout(function() {
+            document.head.removeChild(printStyle);
+        }, 1000);
     });
-
 
     // Update row numbers after removal
     function updateRowNumbers() {
@@ -310,7 +369,7 @@ document.addEventListener('DOMContentLoaded', function () {
         const branchDetails = document.getElementById('branch-details').value;
         const upiId = document.getElementById('upi-id').value;
 
-        // Generate the invoice HTML
+        // Generate the invoice HTML with improved print layout
         const invoiceHTML = `
             ${logoData ? `
                 <div style="text-align: left; margin-bottom: 20px;">
@@ -327,47 +386,47 @@ document.addEventListener('DOMContentLoaded', function () {
             </div>
             
            <div class="from-to-container">
-    <div class="address-block">
-        <h3 class="address-heading">From:</h3>
-        <p><strong>${fromName}</strong></p>
-        <p>${fromAddress.replace(/\n/g, '<br>')}</p>
-        ${fromPhone ? `<p>Phone: ${fromPhone}</p>` : ''}
-        ${fromEmail ? `<p>Email: ${fromEmail}</p>` : ''}
-        ${fromGst ? `<p>GST: ${fromGst}</p>` : ''}
-    </div>
-    
-    <div class="address-block">
-        <h3 class="address-heading">To:</h3>
-        <p><strong>${toName}</strong></p>
-        <p>${toAddress.replace(/\n/g, '<br>')}</p>
-        ${toPhone ? `<p>Phone: ${toPhone}</p>` : ''}
-        ${toEmail ? `<p>Email: ${toEmail}</p>` : ''}
-        ${toGst ? `<p>GST: ${toGst}</p>` : ''}
-    </div>
-</div>
+                <div class="address-block">
+                    <h3 class="address-heading">From:</h3>
+                    <p><strong>${fromName}</strong></p>
+                    <p>${fromAddress.replace(/\n/g, '<br>')}</p>
+                    ${fromPhone ? `<p>Phone: ${fromPhone}</p>` : ''}
+                    ${fromEmail ? `<p>Email: ${fromEmail}</p>` : ''}
+                    ${fromGst ? `<p>GST: ${fromGst}</p>` : ''}
+                </div>
+                
+                <div class="address-block">
+                    <h3 class="address-heading">To:</h3>
+                    <p><strong>${toName}</strong></p>
+                    <p>${toAddress.replace(/\n/g, '<br>')}</p>
+                    ${toPhone ? `<p>Phone: ${toPhone}</p>` : ''}
+                    ${toEmail ? `<p>Email: ${toEmail}</p>` : ''}
+                    ${toGst ? `<p>GST: ${toGst}</p>` : ''}
+                </div>
+            </div>
             
-    <table class="invoice-items">
-    <thead>
-        <tr>
-            <th>SI No.</th>
-            <th>Description</th>
-            <th>HSN Code</th>
-            <th>Quantity</th>
-            <th>Price</th>
-            <th>GST %</th>
-            <th>GST Amt</th>
-            <th>Amount</th>
-        </tr>
-    </thead>
-    <tbody>
-        ${itemsHTML}
-    </tbody>
-</table>
+            <table class="invoice-items" style="width:100%; table-layout:fixed;">
+                <thead>
+                    <tr>
+                        <th style="width:5%">SI No.</th>
+                        <th style="width:25%">Description</th>
+                        <th style="width:10%">HSN Code</th>
+                        <th style="width:10%">Quantity</th>
+                        <th style="width:10%">Price</th>
+                        <th style="width:10%">GST %</th>
+                        <th style="width:10%">GST Amt</th>
+                        <th style="width:20%">Amount</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    ${itemsHTML}
+                </tbody>
+            </table>
             <div class="invoice-total">
-    <p class="invoice-total-row">Total GST: ${selectedCurrency}${totalGstAmount.toFixed(2)}</p>
-    <p class="invoice-total-row">Grand Total: ${selectedCurrency}${grandTotal.toFixed(2)}</p>
-    <p><em>${numberToWords(grandTotal)} ${currencyName} Only</em></p>
-</div>
+                <p class="invoice-total-row">Total GST: ${selectedCurrency}${totalGstAmount.toFixed(2)}</p>
+                <p class="invoice-total-row">Grand Total: ${selectedCurrency}${grandTotal.toFixed(2)}</p>
+                <p><em>${numberToWords(grandTotal)} ${currencyName} Only</em></p>
+            </div>
             
             <div style="margin-top: 30px; border-top: 1px solid #dee2e6; padding-top: 20px;">
                 <h3 style="color: #4361ee; margin-bottom: 10px;">Banking Details:</h3>
@@ -554,4 +613,3 @@ if (popupLastShown && currentTime - popupLastShown < 24 * 60 * 60 * 1000) {
     // Update the last shown time
     localStorage.setItem('popupLastShown', currentTime);
 }
-

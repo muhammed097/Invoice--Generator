@@ -429,27 +429,35 @@ textarea {
 }
 
 @media print {
-    .form-container, header, .invoice-actions {
-        display: none;
+    /* Ensure tables display properly in print */
+    .invoice-items {
+        width: 100% !important;
+        table-layout: fixed !important;
+        white-space: normal !important;
+        overflow-x: visible !important;
+        display: table !important;
     }
-
-    .container {
-        box-shadow: none;
-        max-width: 100%;
-        margin: 0;
-        padding: 0;
+    
+    .invoice-items:before {
+        display: none !important; /* Hide scroll indicator */
     }
-
-    .invoice-output {
-        margin: 0;
-        padding: 20px;
-        box-shadow: none;
-        border: none;
+    
+    .invoice-items th, .invoice-items td {
+        white-space: normal !important;
+        overflow: visible !important;
     }
-
-    body {
-        background-color: white;
-        padding: 0;
+    
+    /* Make sure page breaks don't occur in the middle of items */
+    tr {
+        page-break-inside: avoid !important;
+    }
+    
+    /* Ensure the container has enough width */
+    .container, .invoice-output {
+        width: 100% !important;
+        max-width: none !important;
+        margin: 0 !important;
+        padding: 0 !important;
     }
 }
 
