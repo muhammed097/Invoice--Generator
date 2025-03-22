@@ -167,6 +167,59 @@ textarea {
     background-color: #5a6268;
 }
 
+/* Discount section styles */
+.discount-section {
+    margin-top: 20px;
+    padding: 15px;
+    background-color: #f8f9fa;
+    border-radius: 8px;
+    border: 1px solid var(--border-color);
+}
+
+.discount-controls {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    margin-bottom: 10px;
+}
+
+.discount-controls label {
+    margin-bottom: 0;
+    min-width: 70px;
+}
+
+.discount-controls select {
+    width: 150px;
+}
+
+.discount-value-container {
+    display: flex;
+    align-items: center;
+    position: relative;
+}
+
+.discount-value-container input {
+    width: 120px;
+    padding-right: 25px;
+}
+
+.discount-symbol {
+    position: absolute;
+    right: 10px;
+    color: #6c757d;
+}
+
+#discount-amount-display {
+    margin-top: 10px;
+    text-align: right;
+    font-weight: 600;
+    color: var(--accent-color);
+}
+
+.discount-label {
+    margin-right: 10px;
+}
+
 .total-section {
     display: flex;
     justify-content: flex-end;
@@ -247,18 +300,31 @@ textarea {
     width: 100%;
     border-collapse: collapse;
     margin-bottom: 20px;
+    table-layout: fixed;
 }
 
 .invoice-items th, .invoice-items td {
     border: 1px solid var(--border-color);
     padding: 12px;
     text-align: left;
+    word-wrap: break-word;
+    overflow: hidden;
 }
 
 .invoice-items th {
     background-color: var(--light-color);
     font-weight: 600;
 }
+
+/* Define column widths for invoice items table */
+.invoice-items th:nth-child(1), .invoice-items td:nth-child(1) { width: 5%; text-align: center; }
+.invoice-items th:nth-child(2), .invoice-items td:nth-child(2) { width: 25%; text-align: left; }
+.invoice-items th:nth-child(3), .invoice-items td:nth-child(3) { width: 10%; text-align: center; }
+.invoice-items th:nth-child(4), .invoice-items td:nth-child(4) { width: 8%; text-align: right; }
+.invoice-items th:nth-child(5), .invoice-items td:nth-child(5) { width: 12%; text-align: right; }
+.invoice-items th:nth-child(6), .invoice-items td:nth-child(6) { width: 8%; text-align: right; }
+.invoice-items th:nth-child(7), .invoice-items td:nth-child(7) { width: 12%; text-align: right; }
+.invoice-items th:nth-child(8), .invoice-items td:nth-child(8) { width: 15%; text-align: right; }
 
 .invoice-total {
     text-align: right;
@@ -316,6 +382,13 @@ textarea {
 }
 
 .total-gst {
+    display: flex;
+    justify-content: flex-end;
+    margin-bottom: 10px;
+    margin-right:30px;
+}
+
+.total-subtotal {
     display: flex;
     justify-content: flex-end;
     margin-bottom: 10px;
@@ -428,11 +501,39 @@ textarea {
     }
 }
 
+/* Improved print styles for table formatting */
 @media print {
-    /* Ensure tables display properly in print */
+    /* General print styles */
+    body, html {
+        width: 100% !important;
+        margin: 0 !important;
+        padding: 0 !important;
+    }
+    
+    .container {
+        box-shadow: none !important;
+        max-width: 100% !important;
+        margin: 0 !important;
+        padding: 0 !important;
+    }
+    
+    .form-container, header, .invoice-actions, .footer, .popup-overlay, .discount-section {
+        display: none !important;
+    }
+    
+    .invoice-output {
+        margin: 0 !important;
+        padding: 20px !important;
+        box-shadow: none !important;
+        border: none !important;
+        width: 100% !important;
+    }
+    
+    /* Table-specific print styles */
     .invoice-items {
         width: 100% !important;
         table-layout: fixed !important;
+        border-collapse: collapse !important;
         white-space: normal !important;
         overflow-x: visible !important;
         display: table !important;
@@ -444,23 +545,42 @@ textarea {
     
     .invoice-items th, .invoice-items td {
         white-space: normal !important;
-        overflow: visible !important;
+        word-wrap: break-word !important;
+        overflow: hidden !important;
+        page-break-inside: avoid !important;
+        padding: 8px 4px !important;
+        vertical-align: top !important;
+        font-size: 11pt !important;
     }
     
-    /* Make sure page breaks don't occur in the middle of items */
-    tr {
-        page-break-inside: avoid !important;
-    }
+    /* Define explicit column widths for print */
+    .invoice-items th:nth-child(1), .invoice-items td:nth-child(1) { width: 5% !important; text-align: center !important; }
+    .invoice-items th:nth-child(2), .invoice-items td:nth-child(2) { width: 25% !important; text-align: left !important; }
+    .invoice-items th:nth-child(3), .invoice-items td:nth-child(3) { width: 10% !important; text-align: center !important; }
+    .invoice-items th:nth-child(4), .invoice-items td:nth-child(4) { width: 8% !important; text-align: right !important; }
+    .invoice-items th:nth-child(5), .invoice-items td:nth-child(5) { width: 12% !important; text-align: right !important; }
+    .invoice-items th:nth-child(6), .invoice-items td:nth-child(6) { width: 8% !important; text-align: right !important; }
+    .invoice-items th:nth-child(7), .invoice-items td:nth-child(7) { width: 12% !important; text-align: right !important; }
+    .invoice-items th:nth-child(8), .invoice-items td:nth-child(8) { width: 15% !important; text-align: right !important; }
     
     /* Ensure the container has enough width */
     .container, .invoice-output {
         width: 100% !important;
         max-width: none !important;
         margin: 0 !important;
-        padding: 0 !important;
+        padding: 10px !important;
+    }
+    
+    /* Remove page margins */
+    @page {
+        margin: 0.5cm;
+    }
+    
+    /* Make sure the footer is hidden when printing */
+    .footer {
+        display: none !important;
     }
 }
-
 @media (max-width: 768px) {
     .flex-container {
         flex-direction: column;
@@ -508,16 +628,24 @@ textarea {
         align-items: flex-end;
     }
 
-    .total-gst {
+    .total-gst, .total-subtotal {
         margin-bottom: 15px;
     }
-}
-
-
-/* Make sure the footer is hidden when printing */
-@media print {
-    .footer {
-        display: none;
+    
+    /* Adjust discount controls for mobile */
+    .discount-controls {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    
+    .discount-controls select,
+    .discount-value-container {
+        width: 100%;
+        margin-top: 10px;
+    }
+    
+    .discount-value-container input {
+        width: 100%;
     }
 }
 
@@ -549,5 +677,3 @@ textarea {
         width: 100%;
     }
 }
-
-

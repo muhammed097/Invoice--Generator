@@ -58,7 +58,56 @@ document.addEventListener('DOMContentLoaded', function () {
             symbol.textContent = selectedCurrency;
         });
 
+        // Update discount symbol if fixed amount is selected
+        if (discountType.value === 'fixed') {
+            discountSymbol.textContent = selectedCurrency;
+        }
+
         // Update totals to reflect new currency
+        updateTotals();
+    });
+
+    // Discount functionality
+    const discountType = document.getElementById('discount-type');
+    const discountValue = document.getElementById('discount-value');
+    const discountValueContainer = document.querySelector('.discount-value-container');
+    const discountAmountDisplay = document.getElementById('discount-amount-display');
+    const discountAmount = document.getElementById('discount-amount');
+    const discountSymbol = document.querySelector('.discount-symbol');
+
+    // Initialize discount variables
+    let currentDiscountType = 'none';
+    let currentDiscountValue = 0;
+    let currentDiscountAmount = 0;
+
+    // Show/hide discount value input based on discount type
+    discountType.addEventListener('change', function() {
+        currentDiscountType = this.value;
+        
+        if (this.value === 'none') {
+            discountValueContainer.style.display = 'none';
+            discountAmountDisplay.style.display = 'none';
+            currentDiscountValue = 0;
+        } else {
+            discountValueContainer.style.display = 'flex';
+            discountAmountDisplay.style.display = 'block';
+            
+            // Update the symbol for the discount type
+            if (this.value === 'percentage') {
+                discountSymbol.textContent = '%';
+            } else if (this.value === 'fixed') {
+                discountSymbol.textContent = selectedCurrency;
+            }
+        }
+        
+        // Reset discount value when type changes
+        discountValue.value = '';
+        updateTotals();
+    });
+
+    // Update totals when discount value changes
+    discountValue.addEventListener('input', function() {
+        currentDiscountValue = parseFloat(this.value) || 0;
         updateTotals();
     });
 
@@ -145,6 +194,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 .invoice-items {
                     width: 100% !important;
                     table-layout: fixed !important;
+                    border-collapse: collapse !important;
                     white-space: normal !important;
                     overflow-x: visible !important;
                     display: table !important;
@@ -154,17 +204,28 @@ document.addEventListener('DOMContentLoaded', function () {
                 }
                 .invoice-items th, .invoice-items td {
                     white-space: normal !important;
-                    overflow: visible !important;
+                    word-wrap: break-word !important;
+                    overflow: hidden !important;
+                    page-break-inside: avoid !important;
+                    padding: 8px 4px !important;
+                    vertical-align: top !important;
+                    font-size: 11pt !important;
+                }
+                
+                /* Define explicit column widths for print */
+                .invoice-items th:nth-child(1), .invoice-items td:nth-child(1) { width: 5% !important; text-align: center !important; }
+                .invoice-items th:nth-child(2), .invoice-items td:nth-child(2) { width: 25% !important; text-align: left !important; }
+                .invoice-items th:nth-child(3), .invoice-items td:nth-child(3) { width: 10% !important; text-align: center !important; }
+                .invoice-items th:nth-child(4), .invoice-items td:nth-child(4) { width: 8% !important; text-align: right !important; }
+                .invoice-items th:nth-child(5), .invoice-items td:nth-child(5) { width: 12% !important; text-align: right !important; }
+                .invoice-items th:nth-child(6), .invoice-items td:nth-child(6) { width: 8% !important; text-align: right !important; }
+                .invoice-items th:nth-child(7), .invoice-items td:nth-child(7) { width: 12% !important; text-align: right !important; }
+                .invoice-items th:nth-child(8), .invoice-items td:nth-child(8) { width: 15% !important; text-align: right !important; }
+                
+                /* Ensure page breaks don't occur at bad places */
+                .invoice-total, .from-to-container, .banking-details {
                     page-break-inside: avoid !important;
                 }
-                .invoice-items th:nth-child(1), .invoice-items td:nth-child(1) { width: 5%; }
-                .invoice-items th:nth-child(2), .invoice-items td:nth-child(2) { width: 25%; }
-                .invoice-items th:nth-child(3), .invoice-items td:nth-child(3) { width: 10%; }
-                .invoice-items th:nth-child(4), .invoice-items td:nth-child(4) { width: 10%; }
-                .invoice-items th:nth-child(5), .invoice-items td:nth-child(5) { width: 10%; }
-                .invoice-items th:nth-child(6), .invoice-items td:nth-child(6) { width: 10%; }
-                .invoice-items th:nth-child(7), .invoice-items td:nth-child(7) { width: 10%; }
-                .invoice-items th:nth-child(8), .invoice-items td:nth-child(8) { width: 20%; }
             }
         `;
         document.head.appendChild(printStyle);
@@ -189,7 +250,7 @@ document.addEventListener('DOMContentLoaded', function () {
     // Update totals when item details change
     function updateTotals() {
         const rows = document.querySelectorAll('#item-rows tr');
-        let grandTotal = 0;
+        let subtotal = 0;
         let totalGstAmount = 0;
 
         rows.forEach(row => {
@@ -197,19 +258,37 @@ document.addEventListener('DOMContentLoaded', function () {
             const price = Math.max(parseFloat(row.querySelector('.item-price').value) || 0, 0);
             const gstPercent = Math.max(parseFloat(row.querySelector('.item-gst-percent').value) || 0, 0);
 
-            const subtotal = quantity * price;
-            const gstAmount = (subtotal * gstPercent / 100);
-            const total = subtotal + gstAmount;
+            const rowSubtotal = quantity * price;
+            const gstAmount = (rowSubtotal * gstPercent / 100);
+            const total = rowSubtotal + gstAmount;
 
             row.querySelector('.item-gst-amount').textContent = gstAmount.toFixed(2);
             row.querySelector('.item-total').textContent = total.toFixed(2);
 
-            grandTotal += total;
+            subtotal += rowSubtotal;
             totalGstAmount += gstAmount;
         });
 
-        document.getElementById('total-amount').innerHTML = `<span class="currency-symbol">${selectedCurrency}</span>${grandTotal.toFixed(2)}`;
-        // Create or update GST total element if it doesn't exist yet
+        // Calculate discount
+        currentDiscountAmount = 0;
+        if (currentDiscountType === 'percentage' && currentDiscountValue > 0) {
+            currentDiscountAmount = (subtotal * currentDiscountValue / 100);
+        } else if (currentDiscountType === 'fixed' && currentDiscountValue > 0) {
+            currentDiscountAmount = Math.min(currentDiscountValue, subtotal); // Can't discount more than subtotal
+        }
+
+        // Calculate grand total with discount
+        const grandTotal = subtotal + totalGstAmount - currentDiscountAmount;
+
+        // Display discount amount
+        if (currentDiscountType !== 'none' && currentDiscountAmount > 0) {
+            discountAmount.innerHTML = `<span class="currency-symbol">${selectedCurrency}</span>${currentDiscountAmount.toFixed(2)}`;
+            discountAmountDisplay.style.display = 'block';
+        } else {
+            discountAmountDisplay.style.display = 'none';
+        }
+
+        // Update GST total display
         if (!document.getElementById('total-gst-amount')) {
             const totalSection = document.querySelector('.total-section');
             const gstTotalElement = document.createElement('div');
@@ -221,6 +300,24 @@ document.addEventListener('DOMContentLoaded', function () {
             document.getElementById('total-gst-amount').innerHTML = `<span class="currency-symbol">${selectedCurrency}</span>${totalGstAmount.toFixed(2)}`;
         }
 
+        // Add subtotal display if discount is applied
+        if (currentDiscountAmount > 0) {
+            if (!document.getElementById('subtotal-amount')) {
+                const totalSection = document.querySelector('.total-section');
+                const subtotalElement = document.createElement('div');
+                subtotalElement.className = 'total-subtotal';
+                subtotalElement.innerHTML = `<span class="total-label">Subtotal:</span>
+                                             <span id="subtotal-amount" class="total-amount"><span class="currency-symbol">${selectedCurrency}</span>${subtotal.toFixed(2)}</span>`;
+                totalSection.insertBefore(subtotalElement, totalSection.firstChild);
+            } else {
+                document.getElementById('subtotal-amount').innerHTML = `<span class="currency-symbol">${selectedCurrency}</span>${subtotal.toFixed(2)}`;
+            }
+        } else if (document.getElementById('subtotal-amount')) {
+            document.querySelector('.total-subtotal').remove();
+        }
+
+        // Update grand total
+        document.getElementById('total-amount').innerHTML = `<span class="currency-symbol">${selectedCurrency}</span>${grandTotal.toFixed(2)}`;
         document.getElementById('amount-in-words').textContent = numberToWords(grandTotal) + ' ' + currencyName + ' Only';
     }
 
@@ -330,7 +427,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
         // Generate item rows HTML
         let itemsHTML = '';
-        let grandTotal = 0;
+        let subtotal = 0;
         let totalGstAmount = 0;
 
         items.forEach((item, index) => {
@@ -340,25 +437,80 @@ document.addEventListener('DOMContentLoaded', function () {
             const price = Math.max(parseFloat(item.querySelector('.item-price').value) || 0, 0);
             const gstPercent = Math.max(parseFloat(item.querySelector('.item-gst-percent').value) || 0, 0);
 
-            const subtotal = quantity * price;
-            const gstAmount = (subtotal * gstPercent / 100);
-            const total = subtotal + gstAmount;
+            const rowSubtotal = quantity * price;
+            const gstAmount = (rowSubtotal * gstPercent / 100);
+            const total = rowSubtotal + gstAmount;
+
+            subtotal += rowSubtotal;
+            totalGstAmount += gstAmount;
+
+            // Format numbers with commas for better readability
+            const formattedPrice = price.toLocaleString('en-IN', {
+                maximumFractionDigits: 2,
+                minimumFractionDigits: 2
+            });
+            
+            const formattedGstAmount = gstAmount.toLocaleString('en-IN', {
+                maximumFractionDigits: 2,
+                minimumFractionDigits: 2
+            });
+            
+            const formattedTotal = total.toLocaleString('en-IN', {
+                maximumFractionDigits: 2,
+                minimumFractionDigits: 2
+            });
 
             itemsHTML += `
-        <tr>
-            <td>${index + 1}</td>
-            <td>${description}</td>
-            <td>${hsnCode}</td>
-            <td>${quantity}</td>
-            <td>${selectedCurrency}${price.toFixed(2)}</td>
-            <td>${gstPercent}%</td>
-            <td>${selectedCurrency}${gstAmount.toFixed(2)}</td>
-            <td>${selectedCurrency}${total.toFixed(2)}</td>
-        </tr>
-    `;
+                <tr>
+                    <td style="text-align: center;">${index + 1}</td>
+                    <td>${description}</td>
+                    <td style="text-align: center;">${hsnCode}</td>
+                    <td style="text-align: right;">${quantity}</td>
+                    <td style="text-align: right;">${selectedCurrency}${formattedPrice}</td>
+                    <td style="text-align: right;">${gstPercent}%</td>
+                    <td style="text-align: right;">${selectedCurrency}${formattedGstAmount}</td>
+                    <td style="text-align: right;">${selectedCurrency}${formattedTotal}</td>
+                </tr>
+            `;
+        });
 
-            grandTotal += total;
-            totalGstAmount += gstAmount;
+        // Apply discount if applicable
+        let discountInfo = '';
+        let grandTotal = subtotal + totalGstAmount;
+        
+        if (currentDiscountType !== 'none' && currentDiscountAmount > 0) {
+            const discountTypeLabel = currentDiscountType === 'percentage' 
+                ? `${currentDiscountValue}%` 
+                : `${selectedCurrency}${currentDiscountValue.toFixed(2)}`;
+            
+            const formattedSubtotal = subtotal.toLocaleString('en-IN', {
+                maximumFractionDigits: 2,
+                minimumFractionDigits: 2
+            });
+            
+            const formattedDiscountAmount = currentDiscountAmount.toLocaleString('en-IN', {
+                maximumFractionDigits: 2,
+                minimumFractionDigits: 2
+            });
+            
+            discountInfo = `
+                <p class="invoice-total-row">Subtotal: ${selectedCurrency}${formattedSubtotal}</p>
+                <p class="invoice-total-row" style="color: #e63946;">Discount (${discountTypeLabel}): - ${selectedCurrency}${formattedDiscountAmount}</p>
+            `;
+            
+            // Adjust grand total with discount
+            grandTotal = subtotal + totalGstAmount - currentDiscountAmount;
+        }
+
+        // Format the grand total and total GST with commas
+        const formattedGrandTotal = grandTotal.toLocaleString('en-IN', {
+            maximumFractionDigits: 2,
+            minimumFractionDigits: 2
+        });
+        
+        const formattedTotalGstAmount = totalGstAmount.toLocaleString('en-IN', {
+            maximumFractionDigits: 2,
+            minimumFractionDigits: 2
         });
 
         // Get banking details
@@ -405,17 +557,17 @@ document.addEventListener('DOMContentLoaded', function () {
                 </div>
             </div>
             
-            <table class="invoice-items" style="width:100%; table-layout:fixed;">
+            <table class="invoice-items" style="width:100%; table-layout:fixed; border-collapse:collapse;">
                 <thead>
                     <tr>
-                        <th style="width:5%">SI No.</th>
-                        <th style="width:25%">Description</th>
-                        <th style="width:10%">HSN Code</th>
-                        <th style="width:10%">Quantity</th>
-                        <th style="width:10%">Price</th>
-                        <th style="width:10%">GST %</th>
-                        <th style="width:10%">GST Amt</th>
-                        <th style="width:20%">Amount</th>
+                        <th style="width:5%; text-align:center;">SI No.</th>
+                        <th style="width:25%; text-align:left;">Description</th>
+                        <th style="width:10%; text-align:center;">HSN Code</th>
+                        <th style="width:8%; text-align:right;">Quantity</th>
+                        <th style="width:12%; text-align:right;">Price</th>
+                        <th style="width:8%; text-align:right;">GST %</th>
+                        <th style="width:12%; text-align:right;">GST Amt</th>
+                        <th style="width:15%; text-align:right;">Amount</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -423,12 +575,13 @@ document.addEventListener('DOMContentLoaded', function () {
                 </tbody>
             </table>
             <div class="invoice-total">
-                <p class="invoice-total-row">Total GST: ${selectedCurrency}${totalGstAmount.toFixed(2)}</p>
-                <p class="invoice-total-row">Grand Total: ${selectedCurrency}${grandTotal.toFixed(2)}</p>
+                ${discountInfo}
+                <p class="invoice-total-row">Total GST: ${selectedCurrency}${formattedTotalGstAmount}</p>
+                <p class="invoice-total-row" style="font-size: 20px; color: var(--primary-color);">Grand Total: ${selectedCurrency}${formattedGrandTotal}</p>
                 <p><em>${numberToWords(grandTotal)} ${currencyName} Only</em></p>
             </div>
             
-            <div style="margin-top: 30px; border-top: 1px solid #dee2e6; padding-top: 20px;">
+            <div class="banking-details" style="margin-top: 30px; border-top: 1px solid #dee2e6; padding-top: 20px;">
                 <h3 style="color: #4361ee; margin-bottom: 10px;">Banking Details:</h3>
                 <table style="width: 100%; border-collapse: collapse;">
                     <tr>
@@ -463,8 +616,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 <h3 style="color: #4361ee; margin-bottom: 10px;">Notes:</h3>
                 <p>${notes.replace(/\n/g, '<br>')}</p>
             </div>
-            ` : ''}
-        `;
+            ` : ''}`;
 
         // Update the invoice output div and show it
         document.getElementById('invoice-output').innerHTML = invoiceHTML;
