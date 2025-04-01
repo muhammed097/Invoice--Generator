@@ -104,6 +104,7 @@ document.addEventListener('DOMContentLoaded', function () {
         discountValue.value = '';
         updateTotals();
     });
+// script-part2.js - Invoice Generator (Lines 101-200)
 
     // Update totals when discount value changes
     discountValue.addEventListener('input', function() {
@@ -156,7 +157,10 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 
     // Generate invoice
-    document.getElementById('generate-invoice').addEventListener('click', generateInvoice);
+    document.getElementById('generate-invoice').addEventListener('click', function() {
+        generateInvoice();
+        saveUserProfile(); // Save user profile after generating invoice
+    });
 
     // Print invoice with improved print handling
     document.getElementById('print-invoice').addEventListener('click', function () {
@@ -191,83 +195,89 @@ document.addEventListener('DOMContentLoaded', function () {
                     border: none;
                     width: 100%;
                 }
-                .invoice-items {
-                    width: 100% !important;
-                    table-layout: fixed !important;
-                    border-collapse: collapse !important;
-                    white-space: normal !important;
-                    overflow-x: visible !important;
-                    display: table !important;
-                }
-                .invoice-items:before {
-                    display: none !important;
-                }
-                .invoice-items th, .invoice-items td {
-                    white-space: normal !important;
-                    word-wrap: break-word !important;
-                    overflow: hidden !important;
-                    page-break-inside: avoid !important;
-                    padding: 8px 4px !important;
-                    vertical-align: top !important;
-                    font-size: 11pt !important;
-                }
-                
-                /* Define explicit column widths for print */
-                .invoice-items th:nth-child(1), .invoice-items td:nth-child(1) { width: 5% !important; text-align: center !important; }
-                .invoice-items th:nth-child(2), .invoice-items td:nth-child(2) { width: 25% !important; text-align: left !important; }
-                .invoice-items th:nth-child(3), .invoice-items td:nth-child(3) { width: 10% !important; text-align: center !important; }
-                .invoice-items th:nth-child(4), .invoice-items td:nth-child(4) { width: 8% !important; text-align: right !important; }
-                .invoice-items th:nth-child(5), .invoice-items td:nth-child(5) { width: 12% !important; text-align: right !important; }
-                .invoice-items th:nth-child(6), .invoice-items td:nth-child(6) { width: 8% !important; text-align: right !important; }
-                .invoice-items th:nth-child(7), .invoice-items td:nth-child(7) { width: 12% !important; text-align: right !important; }
-                .invoice-items th:nth-child(8), .invoice-items td:nth-child(8) { width: 15% !important; text-align: right !important; }
-                
-                /* Ensure page breaks don't occur at bad places */
-                .invoice-total, .from-to-container, .banking-details {
-                    page-break-inside: avoid !important;
-                }
             }
         `;
         document.head.appendChild(printStyle);
-        
-        // Execute print
-        window.print();
-        
-        // Clean up after printing
-        setTimeout(function() {
-            document.head.removeChild(printStyle);
-        }, 1000);
-    });
+// script-part3.js - Invoice Generator (Lines 201-300)
 
-    // Update row numbers after removal
-    function updateRowNumbers() {
-        const rows = document.querySelectorAll('#item-rows tr');
-        rows.forEach((row, index) => {
-            row.cells[0].textContent = index + 1;
-        });
-    }
+printStyle.textContent += `
+.invoice-items {
+    width: 100% !important;
+    table-layout: fixed !important;
+    border-collapse: collapse !important;
+    white-space: normal !important;
+    overflow-x: visible !important;
+    display: table !important;
+}
+.invoice-items:before {
+    display: none !important;
+}
+.invoice-items th, .invoice-items td {
+    white-space: normal !important;
+    word-wrap: break-word !important;
+    overflow: hidden !important;
+    page-break-inside: avoid !important;
+    padding: 8px 4px !important;
+    vertical-align: top !important;
+    font-size: 11pt !important;
+}
 
-    // Update totals when item details change
-    function updateTotals() {
-        const rows = document.querySelectorAll('#item-rows tr');
-        let subtotal = 0;
-        let totalGstAmount = 0;
+/* Define explicit column widths for print */
+.invoice-items th:nth-child(1), .invoice-items td:nth-child(1) { width: 5% !important; text-align: center !important; }
+.invoice-items th:nth-child(2), .invoice-items td:nth-child(2) { width: 25% !important; text-align: left !important; }
+.invoice-items th:nth-child(3), .invoice-items td:nth-child(3) { width: 10% !important; text-align: center !important; }
+.invoice-items th:nth-child(4), .invoice-items td:nth-child(4) { width: 8% !important; text-align: right !important; }
+.invoice-items th:nth-child(5), .invoice-items td:nth-child(5) { width: 12% !important; text-align: right !important; }
+.invoice-items th:nth-child(6), .invoice-items td:nth-child(6) { width: 8% !important; text-align: right !important; }
+.invoice-items th:nth-child(7), .invoice-items td:nth-child(7) { width: 12% !important; text-align: right !important; }
+.invoice-items th:nth-child(8), .invoice-items td:nth-child(8) { width: 15% !important; text-align: right !important; }
 
-        rows.forEach(row => {
-            const quantity = Math.max(parseFloat(row.querySelector('.item-quantity').value) || 0, 0);
-            const price = Math.max(parseFloat(row.querySelector('.item-price').value) || 0, 0);
-            const gstPercent = Math.max(parseFloat(row.querySelector('.item-gst-percent').value) || 0, 0);
+/* Ensure page breaks don't occur at bad places */
+.invoice-total, .from-to-container, .banking-details {
+    page-break-inside: avoid !important;
+}
+`;
 
-            const rowSubtotal = quantity * price;
-            const gstAmount = (rowSubtotal * gstPercent / 100);
-            const total = rowSubtotal + gstAmount;
+// Execute print
+window.print();
 
-            row.querySelector('.item-gst-amount').textContent = gstAmount.toFixed(2);
-            row.querySelector('.item-total').textContent = total.toFixed(2);
+// Clean up after printing
+setTimeout(function() {
+document.head.removeChild(printStyle);
+}, 1000);
+});
 
-            subtotal += rowSubtotal;
-            totalGstAmount += gstAmount;
-        });
+// Update row numbers after removal
+function updateRowNumbers() {
+const rows = document.querySelectorAll('#item-rows tr');
+rows.forEach((row, index) => {
+row.cells[0].textContent = index + 1;
+});
+}
+
+// Update totals when item details change
+function updateTotals() {
+const rows = document.querySelectorAll('#item-rows tr');
+let subtotal = 0;
+let totalGstAmount = 0;
+
+rows.forEach(row => {
+const quantity = Math.max(parseFloat(row.querySelector('.item-quantity').value) || 0, 0);
+const price = Math.max(parseFloat(row.querySelector('.item-price').value) || 0, 0);
+const gstPercent = Math.max(parseFloat(row.querySelector('.item-gst-percent').value) || 0, 0);
+
+const rowSubtotal = quantity * price;
+const gstAmount = (rowSubtotal * gstPercent / 100);
+const total = rowSubtotal + gstAmount;
+
+row.querySelector('.item-gst-amount').textContent = gstAmount.toFixed(2);
+row.querySelector('.item-total').textContent = total.toFixed(2);
+
+subtotal += rowSubtotal;
+totalGstAmount += gstAmount;
+});
+
+// script-part4.js - Invoice Generator (Lines 301-400)
 
         // Calculate discount
         currentDiscountAmount = 0;
@@ -344,6 +354,8 @@ document.addEventListener('DOMContentLoaded', function () {
             errorElement.style.display = 'block';
         }
     }
+
+    // script-part5.js - Invoice Generator (Lines 401-500)
 
     // Generate the invoice
     function generateInvoice() {
@@ -430,6 +442,8 @@ document.addEventListener('DOMContentLoaded', function () {
         let subtotal = 0;
         let totalGstAmount = 0;
 
+        // script-part6.js - Invoice Generator (Lines 501-600)
+
         items.forEach((item, index) => {
             const description = item.querySelector('.item-description').value;
             const hsnCode = item.querySelector('.item-hsn').value;
@@ -501,6 +515,8 @@ document.addEventListener('DOMContentLoaded', function () {
             // Adjust grand total with discount
             grandTotal = subtotal + totalGstAmount - currentDiscountAmount;
         }
+
+        // script-part7.js - Invoice Generator (Lines 601-700)
 
         // Format the grand total and total GST with commas
         const formattedGrandTotal = grandTotal.toLocaleString('en-IN', {
@@ -574,6 +590,7 @@ document.addEventListener('DOMContentLoaded', function () {
                     ${itemsHTML}
                 </tbody>
             </table>
+
             <div class="invoice-total">
                 ${discountInfo}
                 <p class="invoice-total-row">Total GST: ${selectedCurrency}${formattedTotalGstAmount}</p>
@@ -635,6 +652,8 @@ document.addEventListener('DOMContentLoaded', function () {
 
         return `${day}/${month}/${year}`;
     }
+
+    // script-part9.js - Invoice Generator (Lines 801-900)
 
     // Convert number to words (for various currencies)
     function numberToWords(number) {
@@ -722,6 +741,178 @@ document.addEventListener('DOMContentLoaded', function () {
 
         return (isNegative ? 'Negative ' : '') + result.trim();
     }
+
+    // script-part10.js - Invoice Generator (Lines 901-1000)
+
+    // NEW FUNCTIONALITY: Save and Load User Profile
+    
+    // Function to save user profile data
+    function saveUserProfile() {
+        const userProfile = {
+            // Logo
+            logoData: logoData,
+            
+            // Sender information
+            fromName: document.getElementById('from-name').value,
+            fromAddress: document.getElementById('from-address').value,
+            fromPhone: document.getElementById('from-phone').value,
+            fromEmail: document.getElementById('from-email').value,
+            fromGst: document.getElementById('from-gst').value,
+            
+            // Banking details
+            bankName: document.getElementById('bank-name').value,
+            accountName: document.getElementById('account-name').value,
+            accountNumber: document.getElementById('account-number').value,
+            ifscCode: document.getElementById('ifsc-code').value,
+            branchDetails: document.getElementById('branch-details').value,
+            upiId: document.getElementById('upi-id').value,
+            
+            // Currency
+            currency: selectedCurrency,
+            
+            // Notes - might be reusable
+            notes: document.getElementById('notes').value
+        };
+        
+        try {
+            localStorage.setItem('invoiceUserProfile', JSON.stringify(userProfile));
+            
+            // Create a downloadable JSON file as backup
+            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(userProfile));
+            const downloadAnchorNode = document.createElement('a');
+            downloadAnchorNode.setAttribute("href", dataStr);
+            downloadAnchorNode.setAttribute("download", "invoice_profile.json");
+            document.body.appendChild(downloadAnchorNode);
+            downloadAnchorNode.click();
+            downloadAnchorNode.remove();
+            
+            showMessage('Profile saved successfully! A backup file has also been downloaded.');
+        } catch (e) {
+            console.error('Error saving profile:', e);
+            alert('Could not save profile. Your browser might have restrictions on local storage.');
+        }
+    }
+    
+    // Function to load user profile data
+    function loadUserProfile(profileData) {
+        try {
+            const profile = typeof profileData === 'string' ? JSON.parse(profileData) : profileData;
+            
+            // Load logo if exists
+            if (profile.logoData) {
+                logoData = profile.logoData;
+                logoPreview.src = logoData;
+                logoPreview.style.display = 'block';
+                removeLogo.style.display = 'inline-block';
+            }
+            
+            // Load sender information
+            document.getElementById('from-name').value = profile.fromName || '';
+            document.getElementById('from-address').value = profile.fromAddress || '';
+            document.getElementById('from-phone').value = profile.fromPhone || '';
+            document.getElementById('from-email').value = profile.fromEmail || '';
+            document.getElementById('from-gst').value = profile.fromGst || '';
+            
+            // Load banking details
+            document.getElementById('bank-name').value = profile.bankName || '';
+            document.getElementById('account-name').value = profile.accountName || '';
+            document.getElementById('account-number').value = profile.accountNumber || '';
+            document.getElementById('ifsc-code').value = profile.ifscCode || '';
+            document.getElementById('branch-details').value = profile.branchDetails || '';
+            document.getElementById('upi-id').value = profile.upiId || '';
+
+            // script-part11.js - Invoice Generator (Lines 1001-1100)
+            
+            // Load currency
+            if (profile.currency) {
+                document.getElementById('currency-select').value = profile.currency;
+                // Trigger change event to update currency throughout the form
+                const event = new Event('change');
+                document.getElementById('currency-select').dispatchEvent(event);
+            }
+            
+            // Load notes
+            document.getElementById('notes').value = profile.notes || '';
+            
+            showMessage('Profile loaded successfully!');
+        } catch (e) {
+            console.error('Error loading profile:', e);
+            alert('Could not load profile. The file might be corrupted.');
+        }
+    }
+    
+    // Function to load profile from localStorage on page load
+    function loadSavedProfile() {
+        const savedProfile = localStorage.getItem('invoiceUserProfile');
+        if (savedProfile) {
+            try {
+                loadUserProfile(JSON.parse(savedProfile));
+            } catch (e) {
+                console.error('Error parsing saved profile:', e);
+            }
+        }
+    }
+    
+    // Function to handle file upload for profile
+    function handleProfileUpload(e) {
+        const file = e.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = function(event) {
+                try {
+                    const profileData = JSON.parse(event.target.result);
+                    loadUserProfile(profileData);
+                } catch (e) {
+                    console.error('Error parsing profile file:', e);
+                    alert('Could not load profile. The file might be corrupted.');
+                }
+            };
+            reader.readAsText(file);
+        }
+    }
+    
+    // Show a temporary message to the user
+    function showMessage(message) {
+        // Create message element if it doesn't exist
+        if (!document.getElementById('message-container')) {
+            const messageContainer = document.createElement('div');
+            messageContainer.id = 'message-container';
+            messageContainer.style.cssText = `
+                position: fixed;
+                top: 20px;
+                left: 50%;
+                transform: translateX(-50%);
+                background-color: #4361ee;
+                color: white;
+                padding: 12px 24px;
+                border-radius: 5px;
+                box-shadow: 0 3px 10px rgba(0,0,0,0.2);
+                z-index: 10000;
+                display: none;
+                font-weight: 600;
+                font-size: 16px;
+            `;
+            document.body.appendChild(messageContainer);
+        }
+        
+        const messageContainer = document.getElementById('message-container');
+        messageContainer.textContent = message;
+        messageContainer.style.display = 'block';
+        
+        // Hide message after a few seconds
+        setTimeout(() => {
+            messageContainer.style.display = 'none';
+        }, 3000);
+    }
+
+    // script-part12.js - Invoice Generator (Lines 1101-1175)
+    
+    // Create event listeners for new buttons
+    document.getElementById('save-profile').addEventListener('click', saveUserProfile);
+    document.getElementById('profile-upload').addEventListener('change', handleProfileUpload);
+    
+    // Load saved profile on page load
+    loadSavedProfile();
 });
 
 

@@ -167,6 +167,45 @@ textarea {
     background-color: #5a6268;
 }
 
+/* New Profile Management Styles */
+.profile-management {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    padding: 15px;
+    background-color: #e9ecef;
+    border-radius: 8px;
+    border-left: 4px solid var(--primary-color);
+}
+
+.profile-actions {
+    display: flex;
+    gap: 10px;
+    align-items:flex-start;
+}
+
+.btn-profile {
+    width: 150px; 
+    text-align: center; 
+    background-color: var(--primary-color);
+    color: white;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+}
+
+.btn-profile:hover {
+    background-color: #324fc7;
+}
+
+.profile-help {
+    color: #6c757d;
+    font-size: 14px;
+    font-style: italic;
+}
+
 /* Discount section styles */
 .discount-section {
     margin-top: 20px;
@@ -433,6 +472,23 @@ textarea {
     100% { transform: scale(1); }
 }
 
+/* Message container for notifications */
+#message-container {
+    position: fixed;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: #4361ee;
+    color: white;
+    padding: 12px 24px;
+    border-radius: 5px;
+    box-shadow: 0 3px 10px rgba(0,0,0,0.2);
+    z-index: 10000;
+    display: none;
+    font-weight: 600;
+    font-size: 16px;
+}
+
 /* Popup Styles */
 .popup-overlay {
     display: none;
@@ -517,7 +573,7 @@ textarea {
         padding: 0 !important;
     }
     
-    .form-container, header, .invoice-actions, .footer, .popup-overlay, .discount-section {
+    .form-container, header, .invoice-actions, .footer, .popup-overlay, .discount-section, .profile-management {
         display: none !important;
     }
     
@@ -581,6 +637,7 @@ textarea {
         display: none !important;
     }
 }
+
 @media (max-width: 768px) {
     .flex-container {
         flex-direction: column;
@@ -646,6 +703,20 @@ textarea {
     
     .discount-value-container input {
         width: 100%;
+    }
+    
+    /* Adjust profile management for mobile */
+    .profile-management {
+        flex-direction: column;
+    }
+    
+    .profile-actions {
+        display: flex;
+        gap: 10px;
+    }
+    
+    .profile-help {
+        text-align: center;
     }
 }
 
