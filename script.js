@@ -63,9 +63,38 @@ document.addEventListener('DOMContentLoaded', function () {
             discountSymbol.textContent = selectedCurrency;
         }
 
-        // Update totals to reflect new currency
-        updateTotals();
+        // Update GST visibility based on currency
+        updateGSTVisibility();
     });
+
+    // Function to control GST visibility based on currency
+    function updateGSTVisibility() {
+        const isIndianCurrency = selectedCurrency === '₹';
+        
+        // Get all GST column headers and cells
+        const gstPercentHeaders = document.querySelectorAll('th:nth-child(6)');
+        const gstAmountHeaders = document.querySelectorAll('th:nth-child(7)');
+        const gstPercentCells = document.querySelectorAll('.item-gst-percent');
+        const gstAmountCells = document.querySelectorAll('.item-gst-amount');
+        
+        // Show/hide GST columns based on currency
+        if (isIndianCurrency) {
+            // Show GST columns
+            gstPercentHeaders.forEach(header => header.style.display = 'table-cell');
+            gstAmountHeaders.forEach(header => header.style.display = 'table-cell');
+            gstPercentCells.forEach(cell => cell.closest('td').style.display = 'table-cell');
+            gstAmountCells.forEach(cell => cell.closest('td').style.display = 'table-cell');
+        } else {
+            // Hide GST columns
+            gstPercentHeaders.forEach(header => header.style.display = 'none');
+            gstAmountHeaders.forEach(header => header.style.display = 'none');
+            gstPercentCells.forEach(cell => cell.closest('td').style.display = 'none');
+            gstAmountCells.forEach(cell => cell.closest('td').style.display = 'none');
+        }
+        
+        // Update totals to recalculate with/without GST
+        updateTotals();
+    }
 
     // Discount functionality
     const discountType = document.getElementById('discount-type');
@@ -104,7 +133,6 @@ document.addEventListener('DOMContentLoaded', function () {
         discountValue.value = '';
         updateTotals();
     });
-// script-part2.js - Invoice Generator (Lines 101-200)
 
     // Update totals when discount value changes
     discountValue.addEventListener('input', function() {
@@ -139,6 +167,7 @@ document.addEventListener('DOMContentLoaded', function () {
     document.getElementById('add-item').addEventListener('click', function () {
         const tableBody = document.getElementById('item-rows');
         const rowCount = tableBody.querySelectorAll('tr').length;
+        const isIndianCurrency = selectedCurrency === '₹';
 
         const newRow = document.createElement('tr');
         newRow.innerHTML = `
@@ -154,6 +183,12 @@ document.addEventListener('DOMContentLoaded', function () {
         `;
 
         tableBody.appendChild(newRow);
+        
+        // Apply GST visibility to the new row
+        if (!isIndianCurrency) {
+            newRow.querySelector('.item-gst-percent').closest('td').style.display = 'none';
+            newRow.querySelector('.item-gst-amount').closest('td').style.display = 'none';
+        }
     });
 
     // Generate invoice
@@ -198,86 +233,89 @@ document.addEventListener('DOMContentLoaded', function () {
             }
         `;
         document.head.appendChild(printStyle);
-// script-part3.js - Invoice Generator (Lines 201-300)
 
-printStyle.textContent += `
-.invoice-items {
-    width: 100% !important;
-    table-layout: fixed !important;
-    border-collapse: collapse !important;
-    white-space: normal !important;
-    overflow-x: visible !important;
-    display: table !important;
-}
-.invoice-items:before {
-    display: none !important;
-}
-.invoice-items th, .invoice-items td {
-    white-space: normal !important;
-    word-wrap: break-word !important;
-    overflow: hidden !important;
-    page-break-inside: avoid !important;
-    padding: 8px 4px !important;
-    vertical-align: top !important;
-    font-size: 11pt !important;
-}
+        printStyle.textContent += `
+        .invoice-items {
+            width: 100% !important;
+            table-layout: fixed !important;
+            border-collapse: collapse !important;
+            white-space: normal !important;
+            overflow-x: visible !important;
+            display: table !important;
+        }
+        .invoice-items:before {
+            display: none !important;
+        }
+        .invoice-items th, .invoice-items td {
+            white-space: normal !important;
+            word-wrap: break-word !important;
+            overflow: hidden !important;
+            page-break-inside: avoid !important;
+            padding: 8px 4px !important;
+            vertical-align: top !important;
+            font-size: 11pt !important;
+        }
 
-/* Define explicit column widths for print */
-.invoice-items th:nth-child(1), .invoice-items td:nth-child(1) { width: 5% !important; text-align: center !important; }
-.invoice-items th:nth-child(2), .invoice-items td:nth-child(2) { width: 25% !important; text-align: left !important; }
-.invoice-items th:nth-child(3), .invoice-items td:nth-child(3) { width: 10% !important; text-align: center !important; }
-.invoice-items th:nth-child(4), .invoice-items td:nth-child(4) { width: 8% !important; text-align: right !important; }
-.invoice-items th:nth-child(5), .invoice-items td:nth-child(5) { width: 12% !important; text-align: right !important; }
-.invoice-items th:nth-child(6), .invoice-items td:nth-child(6) { width: 8% !important; text-align: right !important; }
-.invoice-items th:nth-child(7), .invoice-items td:nth-child(7) { width: 12% !important; text-align: right !important; }
-.invoice-items th:nth-child(8), .invoice-items td:nth-child(8) { width: 15% !important; text-align: right !important; }
+        /* Define explicit column widths for print */
+        .invoice-items th:nth-child(1), .invoice-items td:nth-child(1) { width: 5% !important; text-align: center !important; }
+        .invoice-items th:nth-child(2), .invoice-items td:nth-child(2) { width: 25% !important; text-align: left !important; }
+        .invoice-items th:nth-child(3), .invoice-items td:nth-child(3) { width: 10% !important; text-align: center !important; }
+        .invoice-items th:nth-child(4), .invoice-items td:nth-child(4) { width: 8% !important; text-align: right !important; }
+        .invoice-items th:nth-child(5), .invoice-items td:nth-child(5) { width: 12% !important; text-align: right !important; }
+        .invoice-items th:nth-child(6), .invoice-items td:nth-child(6) { width: 8% !important; text-align: right !important; }
+        .invoice-items th:nth-child(7), .invoice-items td:nth-child(7) { width: 12% !important; text-align: right !important; }
+        .invoice-items th:nth-child(8), .invoice-items td:nth-child(8) { width: 15% !important; text-align: right !important; }
 
-/* Ensure page breaks don't occur at bad places */
-.invoice-total, .from-to-container, .banking-details {
-    page-break-inside: avoid !important;
-}
-`;
+        /* Ensure page breaks don't occur at bad places */
+        .invoice-total, .from-to-container, .banking-details {
+            page-break-inside: avoid !important;
+        }
+        `;
 
-// Execute print
-window.print();
+        // Execute print
+        window.print();
 
-// Clean up after printing
-setTimeout(function() {
-document.head.removeChild(printStyle);
-}, 1000);
-});
+        // Clean up after printing
+        setTimeout(function() {
+            document.head.removeChild(printStyle);
+        }, 1000);
+    });
 
-// Update row numbers after removal
-function updateRowNumbers() {
-const rows = document.querySelectorAll('#item-rows tr');
-rows.forEach((row, index) => {
-row.cells[0].textContent = index + 1;
-});
-}
+    // Update row numbers after removal
+    function updateRowNumbers() {
+        const rows = document.querySelectorAll('#item-rows tr');
+        rows.forEach((row, index) => {
+            row.cells[0].textContent = index + 1;
+        });
+    }
 
-// Update totals when item details change
-function updateTotals() {
-const rows = document.querySelectorAll('#item-rows tr');
-let subtotal = 0;
-let totalGstAmount = 0;
+    // Update totals when item details change
+    function updateTotals() {
+        const rows = document.querySelectorAll('#item-rows tr');
+        let subtotal = 0;
+        let totalGstAmount = 0;
+        const isIndianCurrency = selectedCurrency === '₹';
 
-rows.forEach(row => {
-const quantity = Math.max(parseFloat(row.querySelector('.item-quantity').value) || 0, 0);
-const price = Math.max(parseFloat(row.querySelector('.item-price').value) || 0, 0);
-const gstPercent = Math.max(parseFloat(row.querySelector('.item-gst-percent').value) || 0, 0);
+        rows.forEach(row => {
+            const quantity = Math.max(parseFloat(row.querySelector('.item-quantity').value) || 0, 0);
+            const price = Math.max(parseFloat(row.querySelector('.item-price').value) || 0, 0);
+            
+            const rowSubtotal = quantity * price;
+            let gstAmount = 0;
+            
+            // Only calculate GST for Indian currency
+            if (isIndianCurrency) {
+                const gstPercent = Math.max(parseFloat(row.querySelector('.item-gst-percent').value) || 0, 0);
+                gstAmount = (rowSubtotal * gstPercent / 100);
+                row.querySelector('.item-gst-amount').textContent = gstAmount.toFixed(2);
+            }
+            
+            const total = rowSubtotal + gstAmount;
+            row.querySelector('.item-total').textContent = total.toFixed(2);
 
-const rowSubtotal = quantity * price;
-const gstAmount = (rowSubtotal * gstPercent / 100);
-const total = rowSubtotal + gstAmount;
-
-row.querySelector('.item-gst-amount').textContent = gstAmount.toFixed(2);
-row.querySelector('.item-total').textContent = total.toFixed(2);
-
-subtotal += rowSubtotal;
-totalGstAmount += gstAmount;
-});
-
-// script-part4.js - Invoice Generator (Lines 301-400)
+            subtotal += rowSubtotal;
+            totalGstAmount += gstAmount;
+        });
 
         // Calculate discount
         currentDiscountAmount = 0;
@@ -287,8 +325,8 @@ totalGstAmount += gstAmount;
             currentDiscountAmount = Math.min(currentDiscountValue, subtotal); // Can't discount more than subtotal
         }
 
-        // Calculate grand total with discount
-        const grandTotal = subtotal + totalGstAmount - currentDiscountAmount;
+        // Calculate grand total with discount and GST (if applicable)
+        const grandTotal = subtotal + (isIndianCurrency ? totalGstAmount : 0) - currentDiscountAmount;
 
         // Display discount amount
         if (currentDiscountType !== 'none' && currentDiscountAmount > 0) {
@@ -298,26 +336,33 @@ totalGstAmount += gstAmount;
             discountAmountDisplay.style.display = 'none';
         }
 
-        // Update GST total display
-        if (!document.getElementById('total-gst-amount')) {
-            const totalSection = document.querySelector('.total-section');
-            const gstTotalElement = document.createElement('div');
-            gstTotalElement.className = 'total-gst';
-            gstTotalElement.innerHTML = `<span class="total-label">Total GST:</span>
-                                         <span id="total-gst-amount" class="total-amount"><span class="currency-symbol">${selectedCurrency}</span>${totalGstAmount.toFixed(2)}</span>`;
-            totalSection.insertBefore(gstTotalElement, totalSection.firstChild);
-        } else {
-            document.getElementById('total-gst-amount').innerHTML = `<span class="currency-symbol">${selectedCurrency}</span>${totalGstAmount.toFixed(2)}`;
+        // Update GST total display only for Indian currency
+        const totalGstElement = document.getElementById('total-gst-amount');
+        const totalSection = document.querySelector('.total-section');
+        
+        if (isIndianCurrency) {
+            if (!totalGstElement) {
+                const gstTotalElement = document.createElement('div');
+                gstTotalElement.className = 'total-gst';
+                gstTotalElement.innerHTML = `<span class="total-label">Total GST:</span>
+                                            <span id="total-gst-amount" class="total-amount"><span class="currency-symbol">${selectedCurrency}</span>${totalGstAmount.toFixed(2)}</span>`;
+                totalSection.insertBefore(gstTotalElement, totalSection.firstChild);
+            } else {
+                totalGstElement.innerHTML = `<span class="currency-symbol">${selectedCurrency}</span>${totalGstAmount.toFixed(2)}`;
+                totalGstElement.parentElement.style.display = 'flex';
+            }
+        } else if (totalGstElement) {
+            // Hide the GST total element for non-Indian currency
+            totalGstElement.parentElement.style.display = 'none';
         }
 
         // Add subtotal display if discount is applied
         if (currentDiscountAmount > 0) {
             if (!document.getElementById('subtotal-amount')) {
-                const totalSection = document.querySelector('.total-section');
                 const subtotalElement = document.createElement('div');
                 subtotalElement.className = 'total-subtotal';
                 subtotalElement.innerHTML = `<span class="total-label">Subtotal:</span>
-                                             <span id="subtotal-amount" class="total-amount"><span class="currency-symbol">${selectedCurrency}</span>${subtotal.toFixed(2)}</span>`;
+                                            <span id="subtotal-amount" class="total-amount"><span class="currency-symbol">${selectedCurrency}</span>${subtotal.toFixed(2)}</span>`;
                 totalSection.insertBefore(subtotalElement, totalSection.firstChild);
             } else {
                 document.getElementById('subtotal-amount').innerHTML = `<span class="currency-symbol">${selectedCurrency}</span>${subtotal.toFixed(2)}`;
@@ -354,8 +399,6 @@ totalGstAmount += gstAmount;
             errorElement.style.display = 'block';
         }
     }
-
-    // script-part5.js - Invoice Generator (Lines 401-500)
 
     // Generate the invoice
     function generateInvoice() {
@@ -437,22 +480,30 @@ totalGstAmount += gstAmount;
         const formattedInvoiceDate = formatDate(invoiceDateValue);
         const formattedDueDate = formatDate(dueDateValue);
 
-        // Generate item rows HTML
+        // Check if we're using Indian currency for GST
+        const isIndianCurrency = selectedCurrency === '₹';
+        
+        // Generate item rows HTML with conditional GST columns
         let itemsHTML = '';
         let subtotal = 0;
         let totalGstAmount = 0;
-
-        // script-part6.js - Invoice Generator (Lines 501-600)
 
         items.forEach((item, index) => {
             const description = item.querySelector('.item-description').value;
             const hsnCode = item.querySelector('.item-hsn').value;
             const quantity = Math.max(parseFloat(item.querySelector('.item-quantity').value) || 0, 0);
             const price = Math.max(parseFloat(item.querySelector('.item-price').value) || 0, 0);
-            const gstPercent = Math.max(parseFloat(item.querySelector('.item-gst-percent').value) || 0, 0);
-
+            
             const rowSubtotal = quantity * price;
-            const gstAmount = (rowSubtotal * gstPercent / 100);
+            let gstAmount = 0;
+            let gstPercentValue = 0;
+            
+            // Only calculate GST for Indian currency
+            if (isIndianCurrency) {
+                gstPercentValue = Math.max(parseFloat(item.querySelector('.item-gst-percent').value) || 0, 0);
+                gstAmount = (rowSubtotal * gstPercentValue / 100);
+            }
+            
             const total = rowSubtotal + gstAmount;
 
             subtotal += rowSubtotal;
@@ -474,23 +525,37 @@ totalGstAmount += gstAmount;
                 minimumFractionDigits: 2
             });
 
-            itemsHTML += `
-                <tr>
-                    <td style="text-align: center;">${index + 1}</td>
-                    <td>${description}</td>
-                    <td style="text-align: center;">${hsnCode}</td>
-                    <td style="text-align: right;">${quantity}</td>
-                    <td style="text-align: right;">${selectedCurrency}${formattedPrice}</td>
-                    <td style="text-align: right;">${gstPercent}%</td>
-                    <td style="text-align: right;">${selectedCurrency}${formattedGstAmount}</td>
-                    <td style="text-align: right;">${selectedCurrency}${formattedTotal}</td>
-                </tr>
-            `;
+            // Conditionally include GST columns based on currency
+            if (isIndianCurrency) {
+                itemsHTML += `
+                    <tr>
+                        <td style="text-align: center;">${index + 1}</td>
+                        <td>${description}</td>
+                        <td style="text-align: center;">${hsnCode}</td>
+                        <td style="text-align: right;">${quantity}</td>
+                        <td style="text-align: right;">${selectedCurrency}${formattedPrice}</td>
+                        <td style="text-align: right;">${gstPercentValue}%</td>
+                        <td style="text-align: right;">${selectedCurrency}${formattedGstAmount}</td>
+                        <td style="text-align: right;">${selectedCurrency}${formattedTotal}</td>
+                    </tr>
+                `;
+            } else {
+                itemsHTML += `
+                    <tr>
+                        <td style="text-align: center;">${index + 1}</td>
+                        <td>${description}</td>
+                        <td style="text-align: center;">${hsnCode}</td>
+                        <td style="text-align: right;">${quantity}</td>
+                        <td style="text-align: right;">${selectedCurrency}${formattedPrice}</td>
+                        <td style="text-align: right;">${selectedCurrency}${formattedTotal}</td>
+                    </tr>
+                `;
+            }
         });
 
         // Apply discount if applicable
         let discountInfo = '';
-        let grandTotal = subtotal + totalGstAmount;
+        let grandTotal = subtotal + (isIndianCurrency ? totalGstAmount : 0);
         
         if (currentDiscountType !== 'none' && currentDiscountAmount > 0) {
             const discountTypeLabel = currentDiscountType === 'percentage' 
@@ -513,10 +578,8 @@ totalGstAmount += gstAmount;
             `;
             
             // Adjust grand total with discount
-            grandTotal = subtotal + totalGstAmount - currentDiscountAmount;
+            grandTotal = subtotal + (isIndianCurrency ? totalGstAmount : 0) - currentDiscountAmount;
         }
-
-        // script-part7.js - Invoice Generator (Lines 601-700)
 
         // Format the grand total and total GST with commas
         const formattedGrandTotal = grandTotal.toLocaleString('en-IN', {
@@ -536,6 +599,57 @@ totalGstAmount += gstAmount;
         const ifscCode = document.getElementById('ifsc-code').value;
         const branchDetails = document.getElementById('branch-details').value;
         const upiId = document.getElementById('upi-id').value;
+
+        // Generate table headers based on currency
+        let tableHeaders;
+        if (isIndianCurrency) {
+            tableHeaders = `
+                <thead>
+                    <tr>
+                        <th style="width:5%; text-align:center;">SI No.</th>
+                        <th style="width:25%; text-align:left;">Description</th>
+                        <th style="width:10%; text-align:center;">HSN Code</th>
+                        <th style="width:8%; text-align:right;">Quantity</th>
+                        <th style="width:12%; text-align:right;">Price</th>
+                        <th style="width:8%; text-align:right;">GST %</th>
+                        <th style="width:12%; text-align:right;">GST Amt</th>
+                        <th style="width:15%; text-align:right;">Amount</th>
+                    </tr>
+                </thead>
+            `;
+        } else {
+            tableHeaders = `
+                <thead>
+                    <tr>
+                        <th style="width:5%; text-align:center;">SI No.</th>
+                        <th style="width:30%; text-align:left;">Description</th>
+                        <th style="width:10%; text-align:center;">HSN Code</th>
+                        <th style="width:10%; text-align:right;">Quantity</th>
+                        <th style="width:15%; text-align:right;">Price</th>
+                        <th style="width:20%; text-align:right;">Amount</th>
+                    </tr>
+                </thead>
+            `;
+        }
+
+        // Generate the invoice total section with conditional GST display
+        let invoiceTotalHTML = `
+            <div class="invoice-total">
+                ${discountInfo}
+        `;
+        
+        // Only show GST total for Indian currency
+        if (isIndianCurrency) {
+            invoiceTotalHTML += `
+                <p class="invoice-total-row">Total GST: ${selectedCurrency}${formattedTotalGstAmount}</p>
+            `;
+        }
+        
+        invoiceTotalHTML += `
+                <p class="invoice-total-row" style="font-size: 20px; color: var(--primary-color);">Grand Total: ${selectedCurrency}${formattedGrandTotal}</p>
+                <p><em>${numberToWords(grandTotal)} ${currencyName} Only</em></p>
+            </div>
+        `;
 
         // Generate the invoice HTML with improved print layout
         const invoiceHTML = `
@@ -560,7 +674,7 @@ totalGstAmount += gstAmount;
                     <p>${fromAddress.replace(/\n/g, '<br>')}</p>
                     ${fromPhone ? `<p>Phone: ${fromPhone}</p>` : ''}
                     ${fromEmail ? `<p>Email: ${fromEmail}</p>` : ''}
-                    ${fromGst ? `<p>GST: ${fromGst}</p>` : ''}
+                    ${fromGst && isIndianCurrency ? `<p>GST: ${fromGst}</p>` : ''}
                 </div>
                 
                 <div class="address-block">
@@ -569,34 +683,18 @@ totalGstAmount += gstAmount;
                     <p>${toAddress.replace(/\n/g, '<br>')}</p>
                     ${toPhone ? `<p>Phone: ${toPhone}</p>` : ''}
                     ${toEmail ? `<p>Email: ${toEmail}</p>` : ''}
-                    ${toGst ? `<p>GST: ${toGst}</p>` : ''}
+                    ${toGst && isIndianCurrency ? `<p>GST: ${toGst}</p>` : ''}
                 </div>
             </div>
             
             <table class="invoice-items" style="width:100%; table-layout:fixed; border-collapse:collapse;">
-                <thead>
-                    <tr>
-                        <th style="width:5%; text-align:center;">SI No.</th>
-                        <th style="width:25%; text-align:left;">Description</th>
-                        <th style="width:10%; text-align:center;">HSN Code</th>
-                        <th style="width:8%; text-align:right;">Quantity</th>
-                        <th style="width:12%; text-align:right;">Price</th>
-                        <th style="width:8%; text-align:right;">GST %</th>
-                        <th style="width:12%; text-align:right;">GST Amt</th>
-                        <th style="width:15%; text-align:right;">Amount</th>
-                    </tr>
-                </thead>
+                ${tableHeaders}
                 <tbody>
                     ${itemsHTML}
                 </tbody>
             </table>
 
-            <div class="invoice-total">
-                ${discountInfo}
-                <p class="invoice-total-row">Total GST: ${selectedCurrency}${formattedTotalGstAmount}</p>
-                <p class="invoice-total-row" style="font-size: 20px; color: var(--primary-color);">Grand Total: ${selectedCurrency}${formattedGrandTotal}</p>
-                <p><em>${numberToWords(grandTotal)} ${currencyName} Only</em></p>
-            </div>
+            ${invoiceTotalHTML}
             
             <div class="banking-details" style="margin-top: 30px; border-top: 1px solid #dee2e6; padding-top: 20px;">
                 <h3 style="color: #4361ee; margin-bottom: 10px;">Banking Details:</h3>
@@ -652,8 +750,6 @@ totalGstAmount += gstAmount;
 
         return `${day}/${month}/${year}`;
     }
-
-    // script-part9.js - Invoice Generator (Lines 801-900)
 
     // Convert number to words (for various currencies)
     function numberToWords(number) {
@@ -742,8 +838,6 @@ totalGstAmount += gstAmount;
         return (isNegative ? 'Negative ' : '') + result.trim();
     }
 
-    // script-part10.js - Invoice Generator (Lines 901-1000)
-
     // NEW FUNCTIONALITY: Save and Load User Profile
     
     // Function to save user profile data
@@ -792,7 +886,7 @@ totalGstAmount += gstAmount;
             alert('Could not save profile. Your browser might have restrictions on local storage.');
         }
     }
-    
+
     // Function to load user profile data
     function loadUserProfile(profileData) {
         try {
@@ -820,8 +914,6 @@ totalGstAmount += gstAmount;
             document.getElementById('ifsc-code').value = profile.ifscCode || '';
             document.getElementById('branch-details').value = profile.branchDetails || '';
             document.getElementById('upi-id').value = profile.upiId || '';
-
-            // script-part11.js - Invoice Generator (Lines 1001-1100)
             
             // Load currency
             if (profile.currency) {
@@ -870,7 +962,7 @@ totalGstAmount += gstAmount;
             reader.readAsText(file);
         }
     }
-    
+
     // Show a temporary message to the user
     function showMessage(message) {
         // Create message element if it doesn't exist
@@ -904,8 +996,6 @@ totalGstAmount += gstAmount;
             messageContainer.style.display = 'none';
         }, 3000);
     }
-
-    // script-part12.js - Invoice Generator (Lines 1101-1175)
     
     // Create event listeners for new buttons
     document.getElementById('save-profile').addEventListener('click', saveUserProfile);
@@ -913,6 +1003,9 @@ totalGstAmount += gstAmount;
     
     // Load saved profile on page load
     loadSavedProfile();
+    
+    // Set initial GST visibility based on default currency
+    updateGSTVisibility();
 });
 
 
