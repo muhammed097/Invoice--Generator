@@ -6,6 +6,7 @@ A simple, user-friendly web application for creating professional invoices quick
 
 - **Professional Invoice Creation**: Generate clean, well-formatted invoices in seconds
 - **Multiple Currency Support**: Choose between Rupee (₹), Dollar ($), Euro (€), Pound (£), and Yen (¥)
+- **Custom GST Calculation** (₹ Only): When Indian Rupee (₹) is selected, users can enter their desired GST percentage, and the tax will be calculated automatically
 - **Complete Invoice Details**: Include all essential information from sender and recipient details to itemized billing
 - **Banking Information**: Add bank account details and UPI ID for easy payments
 - **Number to Words Conversion**: Automatically converts amounts to words in the selected currency
