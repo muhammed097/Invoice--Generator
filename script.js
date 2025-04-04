@@ -373,7 +373,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
         // Update grand total
         document.getElementById('total-amount').innerHTML = `<span class="currency-symbol">${selectedCurrency}</span>${grandTotal.toFixed(2)}`;
-        document.getElementById('amount-in-words').textContent = numberToWords(grandTotal) + ' ' + currencyName + ' Only';
+        document.getElementById('amount-in-words').textContent = currencyName + ' ' + numberToWords(grandTotal) + ' Only';
     }
 
     // Hide all error messages
@@ -647,7 +647,7 @@ document.addEventListener('DOMContentLoaded', function () {
         
         invoiceTotalHTML += `
                 <p class="invoice-total-row" style="font-size: 20px; color: var(--primary-color);">Grand Total: ${selectedCurrency}${formattedGrandTotal}</p>
-                <p><em>${numberToWords(grandTotal)} ${currencyName} Only</em></p>
+                <p><em>${currencyName} ${numberToWords(grandTotal)} Only</em></p>
             </div>
         `;
 
