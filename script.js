@@ -45,7 +45,8 @@ document.addEventListener('DOMContentLoaded', function () {
         '$': 'Dollars',
         '€': 'Euros',
         '£': 'Pounds',
-        '¥': 'Yen'
+        '¥': 'Yen',
+        '¥': 'Aed'
     };
 
     // Update currency symbols when currency is changed
@@ -1048,4 +1049,5 @@ if (popupLastShown && currentTime - popupLastShown < 24 * 60 * 60 * 1000) {
 } else {
     // Update the last shown time
     localStorage.setItem('popupLastShown', currentTime);
+
 }
